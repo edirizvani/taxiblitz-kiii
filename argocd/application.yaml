@@ -1,0 +1,39 @@
+# Argo CD Application — GitOps continuous deployment of TaxiBlitz Ohrid.
+# Argo CD watches k8s/overlays/local on the main branch and keeps the
+# "taxiblitz" namespace identical to git: every commit that changes the
+# manifests (e.g. the new image tag written by the CI pipeline) is rolled out
+# automatically, and manual changes in the cluster are reverted (selfHeal).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: taxiblitz
+  namespace: argocd
+  annotations:
+    # compare with the live objects server-side (avoids false "OutOfSync" on
+    # defaulted fields such as StatefulSet volumeClaimTemplates)
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/edirizvani/taxiblitz-kiii.git
+    targetRevision: main
+    path: k8s/overlays/local
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: taxiblitz
+  syncPolicy:
+    automated:
+      prune: true        # delete resources that were removed from git
+      selfHeal: true     # undo manual drift in the cluster
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+  revisionHistoryLimit: 10
