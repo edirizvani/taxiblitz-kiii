@@ -1,0 +1,24 @@
+# Non-secret application settings, injected into the web pods as environment variables.
+# ASP.NET Core maps "__" to ":" (e.g. Redis__ConnectionString -> Redis:ConnectionString).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config
+  labels:
+    app.kubernetes.io/name: taxiblitz-web
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  # Traefik terminates TLS and sends X-Forwarded-Proto/For; trust them so
+  # Request.IsHttps, secure cookies and per-IP rate limiting work correctly.
+  ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+  # "*": kubelet probes call the pod by IP; the Ingress host rules restrict public hostnames
+  AllowedHosts: "*"
+  Redis__ConnectionString: "redis:6379"
+  SmtpHost: "mailpit"
+  SmtpPort: "1025"
+  SmtpEnableSsl: "false"
+  SmtpFrom: "no-reply@taxiblitz.local"
+  AdminEmail: "admin@taxiblitz.local"
+  AdminNotificationEmail: "admin@taxiblitz.local"
+  Logging__LogLevel__Default: "Information"
+  Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command: "Warning"

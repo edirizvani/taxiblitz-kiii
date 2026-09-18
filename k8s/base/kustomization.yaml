@@ -1,0 +1,42 @@
+# Base manifests for TaxiBlitz Ohrid — environment-independent.
+# Environments (local k3d, cloud) live in ../overlays/<env>.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: taxiblitz
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: taxiblitz
+    includeSelectors: false
+
+resources:
+  - namespace.yaml
+  # web application
+  - web/configmap.yaml
+  - web/secret.demo.yaml
+  - web/uploads-pvc.yaml
+  - web/deployment.yaml
+  - web/service.yaml
+  - web/hpa.yaml
+  - web/pdb.yaml
+  # database
+  - mssql/configmap.yaml
+  - mssql/secret.demo.yaml
+  - mssql/service-headless.yaml
+  - mssql/statefulset.yaml
+  # cache
+  - redis/pvc.yaml
+  - redis/deployment.yaml
+  - redis/service.yaml
+  # mail
+  - mailpit/deployment.yaml
+  - mailpit/service.yaml
+  # traffic
+  - ingress/middleware.yaml
+  - ingress/ingress.yaml
+  - networkpolicy.yaml
+
+images:
+  - name: edirizvani/taxiblitz-web
+    newTag: latest

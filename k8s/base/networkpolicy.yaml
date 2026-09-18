@@ -1,0 +1,36 @@
+# Only the web pods may talk to the database and to Redis.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mssql-allow-web-only
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: mssql
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: taxiblitz-web
+      ports:
+        - port: 1433
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-allow-web-only
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: taxiblitz-web
+      ports:
+        - port: 6379
+          protocol: TCP

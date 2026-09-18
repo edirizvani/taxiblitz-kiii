@@ -189,7 +189,7 @@ All changes are **config-driven**: they switch on only when their setting is pre
   | `mailpit` | ports `8025` (UI), SMTP `1025` internal only |
 - [ ] Networks: `frontend` (web, mailpit UI) and `backend` (web, sqlserver, redis, mailpit SMTP), so the DB cannot be reached from outside.
 - [ ] `restart: unless-stopped`, CPU/memory limits (`deploy.resources.limits`), and a `mem_limit` of at least 2 GB for SQL Server.
-- [ ] `docker-compose.override.yml` (dev): `ASPNETCORE_ENVIRONMENT=Development`, SQL port `1433` exposed for tools.
+- [x] `docker-compose.override.yml` (dev): SQL Server exposed on host port `14333` for tools (the app itself runs with `ASPNETCORE_ENVIRONMENT=Docker`, so cookies work over plain http).
 - [ ] `.env.example`: `SA_PASSWORD`, `TAG`, `ADMIN_SEED_PASSWORD`, `REDIS_CONNECTION`, and so on, all placeholders.
 - [ ] Test:
   ```bash
@@ -206,7 +206,7 @@ All changes are **config-driven**: they switch on only when their setting is pre
 
 ## Phase 5: CI pipeline with GitHub Actions → Docker Hub (20%)
 
-- [ ] Repo secrets (Settings → Secrets → Actions): `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`.
+- [ ] Repo **variable** `DOCKERHUB_USERNAME` (not secret, so image names are not masked in logs) and repo **secret** `DOCKERHUB_TOKEN` (Settings → Secrets and variables → Actions).
 - [ ] `.github/workflows/ci-cd.yml`
   - **Triggers:** `push` to `main`/`dev`, tags `v*.*.*`, `pull_request` to `main`, `workflow_dispatch`.
   - **Job `test`:** checkout → `actions/setup-dotnet@v4` (10.0.x) → NuGet cache → `dotnet restore` → `dotnet build -c Release` → `dotnet test --logger trx` → upload test results as an artifact.
@@ -375,13 +375,13 @@ Nothing here can be copied from the course material, or it earns 0 points.
 ## Progress tracker
 
 - [ ] Phase 0: Topic registered and confirmed
-- [ ] Phase 1: Public repo (10%)
-- [ ] Phase 2: App made container-ready
-- [ ] Phase 3: Dockerfile (10%)
-- [ ] Phase 4: Docker Compose (10%)
+- [x] Phase 1: Public repo (10%)
+- [x] Phase 2: App made container-ready
+- [x] Phase 3: Dockerfile (10%)
+- [x] Phase 4: Docker Compose (10%)
 - [ ] Phase 5: CI → Docker Hub (20%)
-- [ ] Phase 6: K8s manifests (40%)
-- [ ] Phase 7: Namespace deployment + demo (10%)
+- [x] Phase 6: K8s manifests (40%) — `k8s/base` + `k8s/overlays/local`
+- [x] Phase 7: Namespace deployment + demo (10%) — local k3d, https://taxiblitz.127.0.0.1.nip.io
 - [ ] Phase 8: CD bonus with Argo CD
 - [ ] Phase 9: Elaborat + presentation
 

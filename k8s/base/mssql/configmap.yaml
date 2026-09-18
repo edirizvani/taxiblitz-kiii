@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mssql-config
+  labels:
+    app.kubernetes.io/name: mssql
+data:
+  ACCEPT_EULA: "Y"
+  MSSQL_PID: "Developer"
+  MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS"
+  # mounted as /var/opt/mssql/mssql.conf — caps SQL Server's memory so it stays
+  # inside the container limit instead of sizing itself to the whole node
+  mssql.conf: |
+    [memory]
+    memorylimitmb = 2048
+
+    [telemetry]
+    customerfeedback = false
