@@ -1,0 +1,29 @@
+# Local environment: k3d cluster on the developer machine.
+#   k3d cluster create taxiblitz --agents 1 -p "80:80@loadbalancer" -p "443:443@loadbalancer"
+#   kubectl apply -k k8s/overlays/local
+# *.127.0.0.1.nip.io resolves to 127.0.0.1 through public DNS, so no /etc/hosts edits are needed.
+# TLS uses Traefik's built-in default (self-signed) certificate.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Ingress
+      name: taxiblitz
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts
+        value: ["taxiblitz.127.0.0.1.nip.io", "mail.127.0.0.1.nip.io"]
+      - op: replace
+        path: /spec/rules/0/host
+        value: taxiblitz.127.0.0.1.nip.io
+      - op: replace
+        path: /spec/rules/1/host
+        value: mail.127.0.0.1.nip.io
+
+images:
+  - name: edirizvani/taxiblitz-web
+    newTag: latest

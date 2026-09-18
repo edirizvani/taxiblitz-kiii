@@ -380,8 +380,8 @@ Nothing here can be copied from the course material, or it earns 0 points.
 - [x] Phase 3: Dockerfile (10%)
 - [x] Phase 4: Docker Compose (10%)
 - [ ] Phase 5: CI → Docker Hub (20%)
-- [ ] Phase 6: K8s manifests (40%)
-- [ ] Phase 7: Namespace deployment + demo (10%)
+- [x] Phase 6: K8s manifests (40%) — `k8s/base` + `k8s/overlays/local`
+- [x] Phase 7: Namespace deployment + demo (10%) — local k3d, https://taxiblitz.127.0.0.1.nip.io
 - [ ] Phase 8: CD bonus with Argo CD
 - [ ] Phase 9: Elaborat + presentation
 

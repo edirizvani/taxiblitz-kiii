@@ -1,0 +1,14 @@
+# User uploads (tour gallery, profile pictures) must survive pod restarts and
+# rollouts. local-path volumes are ReadWriteOnce (node-local), so the web pods
+# use pod affinity to run on the same node and share this volume.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-uploads
+  labels:
+    app.kubernetes.io/name: taxiblitz-web
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 2Gi

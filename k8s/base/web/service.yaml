@@ -1,0 +1,16 @@
+# Stable virtual IP + DNS name (taxiblitz-web) that load-balances across the web pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: taxiblitz-web
+  labels:
+    app.kubernetes.io/name: taxiblitz-web
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: taxiblitz-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

@@ -1,0 +1,36 @@
+# Host-based routing through Traefik. Hostnames are placeholders here and are
+# replaced per environment by the overlays (local: *.nip.io, cloud: real domain).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: taxiblitz
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.middlewares: taxiblitz-redirect-https@kubernetescrd,taxiblitz-security-headers@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - APP_HOST
+        - MAIL_HOST
+  rules:
+    - host: APP_HOST
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: taxiblitz-web
+                port:
+                  name: http
+    - host: MAIL_HOST
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mailpit
+                port:
+                  name: http
