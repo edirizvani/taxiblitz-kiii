@@ -127,7 +127,7 @@ Log in to the admin dashboard to approve or reject this booking.",
 
                 using (var smtp = new SmtpClient(host, port))
                 {
-                    smtp.EnableSsl   = true;
+                    smtp.EnableSsl   = !bool.TryParse(_config["SmtpEnableSsl"], out var ssl) || ssl;   // default true; false for Mailpit
                     smtp.Credentials = new NetworkCredential(user, pass);
                     smtp.Send(message);
                 }
@@ -166,7 +166,7 @@ Log in to the admin dashboard to approve or reject this booking.",
 
                 using (var smtp = new SmtpClient(host, port))
                 {
-                    smtp.EnableSsl   = true;
+                    smtp.EnableSsl   = !bool.TryParse(_config["SmtpEnableSsl"], out var ssl) || ssl;   // default true; false for Mailpit
                     smtp.Credentials = new NetworkCredential(user, pass);
                     smtp.Send(message);
                 }
