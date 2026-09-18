@@ -19,12 +19,12 @@ COPY src/TaxiBlitz.Application/TaxiBlitz.Application.csproj       src/TaxiBlitz.
 COPY src/TaxiBlitz.Persistence/TaxiBlitz.Persistence.csproj       src/TaxiBlitz.Persistence/
 COPY src/TaxiBlitz.Infrastructure/TaxiBlitz.Infrastructure.csproj src/TaxiBlitz.Infrastructure/
 COPY src/TaxiBlitz.Web/TaxiBlitz.Web.csproj                       src/TaxiBlitz.Web/
-RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
+RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages,sharing=locked \
     dotnet restore src/TaxiBlitz.Web/TaxiBlitz.Web.csproj -a $TARGETARCH
 
 # 2) Source code -> publish
 COPY src/ src/
-RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
+RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages,sharing=locked \
     dotnet publish src/TaxiBlitz.Web/TaxiBlitz.Web.csproj \
       -c Release -a $TARGETARCH --no-restore \
       -o /app/publish /p:UseAppHost=false
