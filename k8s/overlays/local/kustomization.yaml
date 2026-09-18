@@ -26,4 +26,4 @@ patches:
 
 images:
   - name: edirizvani/taxiblitz-web
-    newTag: latest
+    newTag: sha-3bb2599
