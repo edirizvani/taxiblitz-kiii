@@ -1,0 +1,25 @@
+# Argo CD web UI through Traefik: https://argocd.127.0.0.1.nip.io
+# (argocd-server runs with server.insecure=true, TLS is terminated by Traefik)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server
+  namespace: argocd
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - argocd.127.0.0.1.nip.io
+  rules:
+    - host: argocd.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  name: http
