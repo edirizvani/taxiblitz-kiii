@@ -382,7 +382,7 @@ Nothing here can be copied from the course material, or it earns 0 points.
 - [ ] Phase 5: CI → Docker Hub (20%)
 - [x] Phase 6: K8s manifests (40%) — `k8s/base` + `k8s/overlays/local`
 - [x] Phase 7: Namespace deployment + demo (10%) — local k3d, https://taxiblitz.127.0.0.1.nip.io
-- [ ] Phase 8: CD bonus with Argo CD
+- [x] Phase 8: CD bonus with Argo CD — `argocd/`, deploy job in `ci-cd.yml`
 - [ ] Phase 9: Elaborat + presentation
 
 **Suggested order when time is short:** 0 → 1 → 3 → 4 → 5 → 6 → 7 (these are the graded points), then 2's extras → 8 (bonus) → 9.

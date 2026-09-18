@@ -2,13 +2,15 @@
 # TaxiBlitz Ohrid — CI/CD pipeline
 #
 #   test ──┐
-#          ├──► docker (build multi-arch image → push to Docker Hub → scan)
+#          ├──► docker (build multi-arch image → push to Docker Hub → scan) ──► deploy
 #   smoke ─┘
 #
 #   test   : restore, build and run the xUnit test suite
 #   smoke  : build the image and start the full Docker Compose stack
 #            (web + SQL Server + Redis + Mailpit), then hit the health endpoint
 #   docker : on pushes only (not PRs) — tag, build for amd64 + arm64, push
+#   deploy : on pushes to main only — GitOps CD: write the new image tag into
+#            k8s/overlays/local; Argo CD in the cluster syncs it automatically
 #
 # Required repo settings:
 #   variable DOCKERHUB_USERNAME   (Settings → Secrets and variables → Actions → Variables)
@@ -186,4 +188,45 @@ jobs:
             echo '```'
             echo "${{ steps.meta.outputs.tags }}"
             echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ───────────────────────────── 4. Continuous deployment (GitOps) ──────────
+  # The pipeline never touches the cluster directly. It commits the new image
+  # tag to git; Argo CD (argocd/application.yaml) watches k8s/overlays/local on
+  # main and rolls the change out to the "taxiblitz" namespace.
+  deploy:
+    name: Deploy (GitOps → Argo CD)
+    needs: docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: deploy-main
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Point the local overlay at the new image
+        id: tag
+        run: |
+          export TAG="sha-${GITHUB_SHA::7}"     # same short tag the docker job pushed
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          sed -i "s|^\(    newTag:\).*|\1 $TAG|" k8s/overlays/local/kustomization.yaml
+          git diff -- k8s/overlays/local/kustomization.yaml
+
+      - name: Commit and push (Argo CD picks it up)
+        run: |
+          if git diff --quiet; then echo "Image tag already up to date"; exit 0; fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "deploy: taxiblitz-web ${{ steps.tag.outputs.tag }} [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          {
+            echo "### Deployed via Argo CD"
+            echo "Image tag \`${{ steps.tag.outputs.tag }}\` committed to \`k8s/overlays/local\`."
+            echo "Argo CD syncs it to the \`taxiblitz\` namespace automatically."
           } >> "$GITHUB_STEP_SUMMARY"
