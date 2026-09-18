@@ -206,7 +206,7 @@ All changes are **config-driven**: they switch on only when their setting is pre
 
 ## Phase 5: CI pipeline with GitHub Actions → Docker Hub (20%)
 
-- [ ] Repo secrets (Settings → Secrets → Actions): `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`.
+- [ ] Repo **variable** `DOCKERHUB_USERNAME` (not secret, so image names are not masked in logs) and repo **secret** `DOCKERHUB_TOKEN` (Settings → Secrets and variables → Actions).
 - [ ] `.github/workflows/ci-cd.yml`
   - **Triggers:** `push` to `main`/`dev`, tags `v*.*.*`, `pull_request` to `main`, `workflow_dispatch`.
   - **Job `test`:** checkout → `actions/setup-dotnet@v4` (10.0.x) → NuGet cache → `dotnet restore` → `dotnet build -c Release` → `dotnet test --logger trx` → upload test results as an artifact.

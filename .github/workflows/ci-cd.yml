@@ -1,0 +1,189 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TaxiBlitz Ohrid — CI/CD pipeline
+#
+#   test ──┐
+#          ├──► docker (build multi-arch image → push to Docker Hub → scan)
+#   smoke ─┘
+#
+#   test   : restore, build and run the xUnit test suite
+#   smoke  : build the image and start the full Docker Compose stack
+#            (web + SQL Server + Redis + Mailpit), then hit the health endpoint
+#   docker : on pushes only (not PRs) — tag, build for amd64 + arm64, push
+#
+# Required repo settings:
+#   variable DOCKERHUB_USERNAME   (Settings → Secrets and variables → Actions → Variables)
+#   secret   DOCKERHUB_TOKEN      (Docker Hub personal access token, Read & Write)
+# ─────────────────────────────────────────────────────────────────────────────
+name: CI/CD
+
+on:
+  push:
+    branches: [main, dev]
+    tags: ["v*.*.*"]
+    paths-ignore: ["**.md", "docs/**"]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  IMAGE_NAME: docker.io/${{ vars.DOCKERHUB_USERNAME }}/taxiblitz-web
+
+jobs:
+  # ───────────────────────────── 1. Unit + integration tests ────────────────
+  test:
+    name: Build & test (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore TaxiBlitz.sln
+
+      - name: Build
+        run: dotnet build TaxiBlitz.sln --no-restore -c Release
+
+      - name: Test
+        run: >
+          dotnet test tests/TaxiBlitz.Tests/TaxiBlitz.Tests.csproj
+          --no-build -c Release
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./test-results
+
+      - name: Test summary
+        if: always()
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import glob, xml.etree.ElementTree as ET
+          ns = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+          for f in glob.glob("test-results/*.trx"):
+              c = ET.parse(f).getroot().find("t:ResultSummary/t:Counters", ns).attrib
+              print("### Test results")
+              print("| Total | Passed | Failed | Skipped |\n|---|---|---|---|")
+              print(f"| {c['total']} | {c['passed']} | {c['failed']} | {int(c['total']) - int(c['executed'])} |")
+          EOF
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 14
+
+  # ───────────────────────────── 2. Container smoke test ────────────────────
+  smoke:
+    name: Docker Compose smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Prepare .env from the example
+        run: cp .env.example .env
+
+      - name: Start the full stack
+        run: docker compose -f docker-compose.yml up -d --build --wait --wait-timeout 300
+
+      - name: Check health endpoints and pages
+        run: |
+          set -e
+          curl -fsS http://localhost:8080/health/ready   && echo " ← /health/ready"
+          curl -fsS -o /dev/null -w "%{http_code} ← /\n"      http://localhost:8080/
+          curl -fsS -o /dev/null -w "%{http_code} ← /Tours\n" http://localhost:8080/Tours
+          curl -fsS http://localhost:8025/readyz              && echo " ← mailpit"
+          docker compose -f docker-compose.yml ps
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.yml logs --tail=200
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.yml down -v
+
+  # ───────────────────────────── 3. Build & push image ──────────────────────
+  docker:
+    name: Build & push image (Docker Hub)
+    needs: [test, smoke]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up QEMU (arm64 emulation for the runtime stage)
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Compute image tags and labels
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push (linux/amd64, linux/arm64)
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            GIT_SHA=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true
+
+      - name: Vulnerability scan (Trivy, report only)
+        run: |
+          docker run --rm aquasec/trivy:latest image \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 0 \
+            --format table "${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}" | tee trivy.txt
+          { echo "### Trivy scan (HIGH/CRITICAL, fixable)"; echo '```'; tail -n 40 trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Image summary
+        run: |
+          {
+            echo "### Pushed to Docker Hub"
+            echo "Digest: \`${{ steps.build.outputs.digest }}\`"
+            echo '```'
+            echo "${{ steps.meta.outputs.tags }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
