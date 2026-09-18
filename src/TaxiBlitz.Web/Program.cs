@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using StackExchange.Redis;
 using System.Threading.RateLimiting;
 using TaxiBlitz.Application.Interfaces;
 using TaxiBlitz.Application.Services;
@@ -104,13 +107,41 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
 
 // ── Data protection — persist keys so OAuth cookies survive restarts ─
 // Azure App Service: /home is persistent across deployments; ContentRootPath resets on deploy
+// Containers / Kubernetes: when Redis is configured, keys (and the session store) are shared
+// through Redis so every replica can decrypt the same auth cookies.
 var dpKeysPath = builder.Environment.IsProduction()
     ? "/home/data/DataProtection-Keys"
     : Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys");
 
-builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(dpKeysPath))
-    .SetApplicationName("TaxiBlitzOhrid");
+var redisConnectionString = builder.Configuration["Redis:ConnectionString"];
+IConnectionMultiplexer? redis = null;
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    var redisOptions = ConfigurationOptions.Parse(redisConnectionString);
+    redisOptions.AbortOnConnectFail = false;   // keep retrying if Redis starts after the app
+    redis = ConnectionMultiplexer.Connect(redisOptions);
+    builder.Services.AddSingleton(redis);
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.ConnectionMultiplexerFactory = () => Task.FromResult(redis);
+        options.InstanceName = "TaxiBlitz:";
+    });
+}
+
+var dataProtection = builder.Services.AddDataProtection().SetApplicationName("TaxiBlitzOhrid");
+if (redis != null)
+    dataProtection.PersistKeysToStackExchangeRedis(redis, "TaxiBlitz:DataProtection-Keys");
+else
+    dataProtection.PersistKeysToFileSystem(new DirectoryInfo(dpKeysPath));
+
+// ── Health checks — used by Docker healthcheck and Kubernetes probes ─
+var healthChecks = builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live"])
+    .AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
+if (redis != null)
+    healthChecks.AddCheck("redis",
+        () => redis.IsConnected ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy("Redis is not connected"),
+        tags: ["ready"]);
 
 // ── Session ───────────────────────────────────────────────────────
 builder.Services.AddSession(options =>
@@ -364,6 +395,10 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("Admin seeder error: " + ex.Message);
     }
 }
+
+// liveness: the process is up; readiness: database (and Redis, if configured) reachable
+app.MapHealthChecks("/health/live",  new HealthCheckOptions { Predicate = check => check.Tags.Contains("live") });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 

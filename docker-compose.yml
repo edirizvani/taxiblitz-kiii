@@ -1,10 +1,152 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TaxiBlitz Ohrid — local orchestration with Docker Compose
+#
+#   web        ASP.NET Core 10 MVC app (built from ./Dockerfile)
+#   sqlserver  SQL Server 2022 database
+#   redis      shared Data Protection keys + session store
+#   mailpit    SMTP server with a web inbox (email confirmation, booking mails)
+#
+# Networks:
+#   frontend  – reachable from the host (web UI, Mailpit UI)
+#   backend   – internal only; the database and Redis are never exposed
+#
+# Usage:  cp .env.example .env   # set passwords
+#         docker compose up -d --build
+#         open http://localhost:8080   (app)   http://localhost:8025   (mail)
+# ─────────────────────────────────────────────────────────────────────────────
+name: taxiblitz
+
 services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${TAG:-latest}
+    image: ${DOCKERHUB_USER:-local}/taxiblitz-web:${TAG:-latest}
+    container_name: taxiblitz-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    environment:
+      # "Docker" is not "Production", so cookies also work over plain http://localhost
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TaxiBlitzOhrid;User Id=sa;Password=${SA_PASSWORD:?set SA_PASSWORD in .env};TrustServerCertificate=True;MultipleActiveResultSets=true"
+      Redis__ConnectionString: "redis:6379"
+      SmtpHost: mailpit
+      SmtpPort: "1025"
+      SmtpEnableSsl: "false"
+      SmtpUser: taxiblitz          # Mailpit accepts any credentials
+      SmtpPass: mailpit
+      SmtpFrom: no-reply@taxiblitz.local
+      AdminEmail: ${ADMIN_EMAIL:-admin@taxiblitz.local}
+      AdminNotificationEmail: ${ADMIN_EMAIL:-admin@taxiblitz.local}
+      AdminSeedPassword: ${ADMIN_SEED_PASSWORD:?set ADMIN_SEED_PASSWORD in .env}
+      OpenWeatherApiKey: ${OPENWEATHER_API_KEY:-}
+      GoogleClientId: ${GOOGLE_CLIENT_ID:-}
+      GoogleClientSecret: ${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - uploads-gallery:/app/wwwroot/gallery
+      - uploads-profile:/app/wwwroot/profile-pics
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      # readiness: the app is up AND can reach the database and Redis
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/ready"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    env_file:
-      - .env
+    platform: linux/amd64            # SQL Server ships amd64 only (runs via Rosetta on Apple Silicon)
+    container_name: taxiblitz-sqlserver
+    restart: unless-stopped
     environment:
-      SA_PASSWORD: "${SA_PASSWORD}"
       ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:?set SA_PASSWORD in .env}
+    volumes:
+      - mssql-data:/var/opt/mssql
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -b -Q 'SELECT 1' -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+
+  redis:
+    image: redis:8.8-alpine
+    container_name: taxiblitz-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  mailpit:
+    image: axllent/mailpit:v1.31
+    container_name: taxiblitz-mailpit
+    restart: unless-stopped
     ports:
-      - "1433:1433"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+      MP_MAX_MESSAGES: "500"
+    networks:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+
+networks:
+  frontend:
+  backend:
+    internal: true                   # no host/internet access for db and cache
+
+volumes:
+  mssql-data:
+  redis-data:
+  uploads-gallery:
+  uploads-profile:

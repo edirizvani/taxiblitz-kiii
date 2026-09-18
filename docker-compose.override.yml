@@ -1,0 +1,11 @@
+# Local development extras — loaded automatically by `docker compose up`.
+# Skip it with:  docker compose -f docker-compose.yml up -d
+services:
+  sqlserver:
+    # Expose SQL Server to the host for tools (Azure Data Studio, DBeaver, dotnet ef).
+    # 14333 avoids clashing with another SQL Server already bound to 1433.
+    ports:
+      - "${SQL_HOST_PORT:-14333}:1433"
+    networks:
+      - backend
+      - frontend

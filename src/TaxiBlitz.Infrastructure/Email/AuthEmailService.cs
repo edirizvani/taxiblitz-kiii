@@ -147,7 +147,7 @@ public class AuthEmailService : IAuthEmailService
 
             using var smtp = new SmtpClient(host, port)
             {
-                EnableSsl   = true,
+                EnableSsl   = !bool.TryParse(_config["SmtpEnableSsl"], out var ssl) || ssl,   // default true; false for Mailpit
                 Credentials = new NetworkCredential(user, pass)
             };
             await smtp.SendMailAsync(message);
