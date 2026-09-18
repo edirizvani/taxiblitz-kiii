@@ -1,0 +1,25 @@
+# Keep the build context small and free of secrets
+**/bin/
+**/obj/
+**/DataProtection-Keys/
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/*.user
+.git
+.github
+.vs
+.vscode
+.idea
+.env
+.env.*
+!.env.example
+tests/
+docs/
+k8s/
+argocd/
+scripts/
+secrets/
+*.md
+Dockerfile
+.dockerignore
+docker-compose*.yml
