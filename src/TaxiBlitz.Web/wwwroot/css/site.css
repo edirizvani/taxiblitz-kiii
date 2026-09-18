@@ -1,0 +1,684 @@
+﻿/* Set padding to keep content from hitting the edges */
+.body-content {
+    margin-top: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+.input-fluid,
+.form-control {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Import responsive utilities */
+@import url("responsive-utilities.css");
+
+@media (max-width: 575.98px) {
+    .body-content {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+/* ============================================
+   ENHANCED RESPONSIVE LAYOUT FIXES
+   ============================================ */
+
+/* Fixed container sizing for all screen widths */
+@media (max-width: 319px) {
+    .container {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        max-width: 100% !important;
+    }
+}
+
+@media (min-width: 320px) and (max-width: 374px) {
+    .container {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        max-width: 100% !important;
+    }
+}
+
+@media (min-width: 375px) and (max-width: 413px) {
+    .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        max-width: 100% !important;
+    }
+}
+
+@media (min-width: 414px) and (max-width: 479px) {
+    .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ============================================
+   IMPROVED NAVBAR RESPONSIVENESS
+   ============================================ */
+
+/* Better hamburger menu on mobile */
+@media (max-width: 575.98px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .navbar-toggler {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .navbar-collapse {
+        margin-top: 0.5rem;
+    }
+
+    .navbar-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0 !important;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.9rem;
+        display: block;
+        width: 100%;
+    }
+}
+
+@media (max-width: 374px) {
+    .navbar {
+        padding: 0.35rem 0.75rem !important;
+    }
+
+    .navbar .container {
+        gap: 0.5rem !important;
+    }
+
+    .navbar-brand {
+        font-size: 1rem;
+    }
+}
+
+/* ============================================
+   IMPROVED FLOATING BUTTON RESPONSIVENESS
+   ============================================ */
+
+/* Adjust floating button for extra small screens */
+@media (max-width: 319px) {
+    .floating-btn {
+        right: 8px;
+        bottom: 8px;
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+
+    .floating-btn-icon,
+    .floating-btn-icon img {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Further optimization for small phones */
+@media (max-width: 374px) {
+    .floating-btn {
+        right: 10px;
+        bottom: 10px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .floating-btn-icon,
+    .floating-btn-icon img {
+        width: 22px;
+        height: 22px;
+    }
+}
+
+@media (max-width: 414px) {
+    .floating-btn {
+        right: 12px;
+        bottom: 12px;
+        width: 52px;
+        height: 52px;
+        font-size: 20px;
+    }
+}
+
+/* ============================================
+   IMPROVED CAROUSEL RESPONSIVENESS
+   ============================================ */
+
+/* Reduce carousel padding on mobile */
+@media (max-width: 767.98px) {
+    #featuredToursCarousel .carousel-inner,
+    #testimonialCarousel .carousel-inner {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    #featuredToursCarousel .carousel-control-prev,
+    #featuredToursCarousel .carousel-control-next,
+    #testimonialCarousel .carousel-control-prev,
+    #testimonialCarousel .carousel-control-next {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    #featuredToursCarousel .carousel-control-prev-icon,
+    #featuredToursCarousel .carousel-control-next-icon,
+    #testimonialCarousel .carousel-control-prev-icon,
+    #testimonialCarousel .carousel-control-next-icon {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    #featuredToursCarousel .carousel-inner,
+    #testimonialCarousel .carousel-inner {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    #featuredToursCarousel .carousel-control-prev,
+    #featuredToursCarousel .carousel-control-next,
+    #testimonialCarousel .carousel-control-prev,
+    #testimonialCarousel .carousel-control-next {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    #featuredToursCarousel .carousel-control-prev-icon,
+    #featuredToursCarousel .carousel-control-next-icon,
+    #testimonialCarousel .carousel-control-prev-icon,
+    #testimonialCarousel .carousel-control-next-icon {
+        width: 0.9rem;
+        height: 0.9rem;
+    }
+}
+
+@media (max-width: 414px) {
+    #featuredToursCarousel .carousel-inner,
+    #testimonialCarousel .carousel-inner {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    #featuredToursCarousel .carousel-control-prev,
+    #featuredToursCarousel .carousel-control-next,
+    #testimonialCarousel .carousel-control-prev,
+    #testimonialCarousel .carousel-control-next {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+
+/* ============================================
+   IMPROVED MODAL RESPONSIVENESS
+   ============================================ */
+
+@media (max-width: 575.98px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+
+    .modal-header {
+        padding: 0.75rem 1rem !important;
+    }
+
+    .modal-body {
+        padding: 1rem !important;
+        max-height: calc(100vh - 8rem);
+        overflow-y: auto;
+    }
+
+    .modal-footer {
+        padding: 0.75rem 1rem !important;
+    }
+
+    .close {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 414px) {
+    .modal-dialog {
+        margin: 0.25rem;
+        max-width: calc(100% - 0.5rem);
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 0.6rem 0.8rem !important;
+    }
+
+    .modal-body {
+        padding: 0.8rem !important;
+    }
+
+    .modal-title {
+        font-size: 1rem;
+    }
+}
+
+/* Ensure contact options don't overflow */
+@media (max-width: 575.98px) {
+    .contact-option {
+        gap: 10px;
+        padding: 12px 14px;
+    }
+
+    .images {
+        width: 40px;
+        height: 40px;
+    }
+
+    .contact-copy strong {
+        font-size: 0.9rem;
+    }
+
+    .contact-copy span {
+        font-size: 0.8rem;
+    }
+}
+
+/* ============================================
+   IMPROVED FORM RESPONSIVENESS
+   ============================================ */
+
+@media (max-width: 575.98px) {
+    .form-group {
+        margin-bottom: 0.85rem;
+    }
+
+    .form-control {
+        padding: 0.7rem 0.9rem;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        padding: 0.7rem 0.9rem;
+    }
+
+    select.form-control {
+        background-position: right 0.85rem center;
+        padding-right: 2.3rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.7rem;
+    }
+
+    .form-group.full {
+        grid-column: 1;
+    }
+}
+
+/* ============================================
+   IMPROVED BUTTON RESPONSIVENESS
+   ============================================ */
+
+/* Ensure buttons don't overflow */
+@media (max-width: 575.98px) {
+    .btn {
+        min-height: 2.5rem;
+        padding: 0.6rem 1rem;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .btn-lg {
+        padding: 0.8rem 1.2rem;
+        font-size: 1rem;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-group-vertical > .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 414px) {
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.55rem 0.9rem;
+    }
+
+    .btn-book,
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        display: block;
+    }
+}
+
+/* ============================================
+   IMPROVED GRID LAYOUTS
+   ============================================ */
+
+/* Tour cards - responsive stacking */
+@media (max-width: 991.98px) {
+    .tour-grid {
+        row-gap: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .tour-grid {
+        row-gap: 0.85rem;
+    }
+
+    .tour-card .card-footer {
+        flex-direction: column;
+    }
+
+    .tour-card .card-footer .btn {
+        flex-basis: 100%;
+    }
+}
+
+/* Meta chips - responsive grid */
+@media (max-width: 767.98px) {
+    .tour-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .tour-meta {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .meta-chip {
+        padding: 0.7rem;
+    }
+
+    .meta-chip .label {
+        font-size: 0.7rem;
+    }
+
+    .meta-chip .value {
+        font-size: 0.95rem;
+    }
+}
+
+/* Info grid - responsive */
+@media (max-width: 767.98px) {
+    .info-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+
+    .info-item {
+        padding: 0.8rem;
+    }
+
+    .info-item .label {
+        font-size: 0.7rem;
+    }
+
+    .info-item .value {
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   IMPROVED HERO SECTION RESPONSIVENESS
+   ============================================ */
+
+@media (max-width: 767.98px) {
+    .tour-hero {
+        border-radius: 1rem;
+    }
+
+    .tour-hero-grid {
+        padding: 0.8rem;
+    }
+
+    .tour-title {
+        margin-bottom: 0.75rem;
+    }
+
+    .tour-lead {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .tour-hero-grid {
+        padding: 0.6rem;
+    }
+
+    .tour-badge {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.75rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .tour-media {
+        min-height: 200px;
+        border-radius: 1rem;
+    }
+
+    .tour-media img {
+        min-height: 200px;
+    }
+
+    .tour-title {
+        font-size: 1.4rem;
+        line-height: 1.1;
+        margin-bottom: 0.6rem;
+    }
+
+    .tour-lead {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+}
+
+/* ============================================
+   IMPROVED BOOKING SHELL RESPONSIVENESS
+   ============================================ */
+
+@media (max-width: 414px) {
+    .booking-shell {
+        border-radius: 0.9rem;
+        margin: 0 0.5rem;
+    }
+
+    .booking-visual,
+    .booking-panel {
+        padding: 0.85rem;
+    }
+
+    .booking-visual {
+        min-height: 220px;
+    }
+
+    .booking-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .booking-visual-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .booking-visual-copy {
+        font-size: 0.9rem;
+        margin-bottom: 0.85rem;
+    }
+}
+
+/* ============================================
+   PREVENT HORIZONTAL SCROLLING
+   ============================================ */
+
+html {
+    overflow-x: hidden;
+}
+
+html, body {
+    max-width: 100%;
+}
+
+.body-content {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* ============================================
+   TOUCH TARGET OPTIMIZATION
+   ============================================ */
+
+/* Ensure minimum touch targets */
+@media (max-width: 1024px) {
+    button,
+    a.btn,
+    input[type="button"],
+    input[type="submit"] {
+        min-height: 2.75rem;
+        min-width: 2.75rem;
+    }
+}
+
+/* ============================================
+   IMPROVED PICTURE/IMAGE RESPONSIVENESS
+   ============================================ */
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+picture {
+    display: block;
+    width: 100%;
+}
+
+/* ============================================
+   RESPONSIVE VIDEO/IFRAME
+   ============================================ */
+
+.video-frame {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.video-frame iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ============================================
+   LANDSCAPE ORIENTATION FIXES
+   ============================================ */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .floating-btn {
+        bottom: 8px;
+    }
+
+    .navbar {
+        padding: 0.25rem 1rem;
+    }
+
+    .container {
+        padding-top: 45px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Ensure focus states are visible */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #0f766e;
+    outline-offset: 2px;
+}
+
+/* High contrast text */
+@media (prefers-contrast: more) {
+    body {
+        color: #000;
+    }
+
+    .navbar {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .floating-btn:hover {
+        transform: none;
+    }
+
+    .tour-card:hover {
+        transform: none;
+    }
+
+    button:hover {
+        transform: none;
+    }
+}

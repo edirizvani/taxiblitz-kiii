@@ -1,0 +1,60 @@
+﻿@model SendCodeViewModel
+@{
+    ViewBag.Title = "Send verification code";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .tb-body { padding-top: 0 !important; }
+</style>
+
+<div class="dt-auth">
+    <div class="dt-auth-left">
+        <div class="dt-auth-content">
+            <div class="dt-auth-brand">
+                <a class="dt-brand" href="@Url.Action("Index","Home")">
+                    <span class="dt-brand-mark"><span class="dt-brand-mark-dot"></span></span>
+                    <span class="dt-brand-text">TaxiBlitz <em class="serif-it">Ohrid</em></span>
+                </a>
+            </div>
+
+            <div class="dt-auth-card">
+                @using (Html.BeginForm("SendCode", "Account", new { ReturnUrl = Model.ReturnUrl }, FormMethod.Post, null, new { role = "form" })) {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("rememberMe", @Model.RememberMe)
+
+                    <h2 class="dt-auth-h">Verify<br><em class="serif-it">your identity.</em></h2>
+                    <p class="dt-auth-sub">Choose how to receive your security code.</p>
+
+                    <div class="dt-field">
+                        <label for="SelectedProvider">Send code via</label>
+                        @Html.DropDownListFor(m => m.SelectedProvider, Model.Providers, new { @class = "dt-select", id = "SelectedProvider" })
+                    </div>
+
+                    <button type="submit" class="dt-auth-submit">
+                        Send code
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="dt-auth-right">
+        <div class="dt-auth-photo"></div>
+        <div class="dt-auth-photo-overlay"></div>
+        <div class="dt-auth-photo-quote">
+            "Two steps to safety — <em>one step closer to Ohrid.</em>"
+            <div class="dt-auth-photo-author">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                TaxiBlitz Ohrid
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validate-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+

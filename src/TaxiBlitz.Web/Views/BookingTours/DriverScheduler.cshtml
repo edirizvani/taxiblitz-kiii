@@ -1,0 +1,157 @@
+@model IEnumerable<BookingTour>
+
+@{
+    ViewBag.Title = "Driver Scheduler";
+    var bookings     = Model ?? Enumerable.Empty<BookingTour>();
+    var approvedList = bookings.Where(b => b.Status == "Approved" && b.BookingDateTime >= DateTime.Now).ToList();
+    var canceledList = bookings.Where(b => b.Status == "Canceled" || b.Status == "Cancelled").ToList();
+    var pastList     = bookings.Where(b => b.BookingDateTime < DateTime.Now).ToList();
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Driver view</span>
+            <h1 style="font-size:56px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">My <em class="serif-it">schedule</em></h1>
+        </div>
+    </div>
+
+    <!-- Stat tiles (3-col for drivers) -->
+    <div class="dt-admin-tiles dt-admin-tiles-3">
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#4ADE80;">@approvedList.Count</span>
+            <span class="dt-admin-tile-l">Upcoming</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#F87171;">@canceledList.Count</span>
+            <span class="dt-admin-tile-l">Canceled</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:var(--fg-3);">@pastList.Count</span>
+            <span class="dt-admin-tile-l">Past</span>
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="dt-admin-cal">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <h3 style="font-size:16px;font-weight:500;color:var(--fg);margin:0;">Booking calendar</h3>
+            <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-3);">Approved only</span>
+        </div>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Approved -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:#4ADE80;">Upcoming bookings</span>
+            <span class="dt-admin-table-badge">@approvedList.Count</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Tour</th><th>Customer</th><th>Email</th><th>Phone</th><th>Date & Time</th><th>People</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!approvedList.Any()) {
+                    <tr><td colspan="6" style="text-align:center;color:var(--fg-3);">No upcoming bookings</td></tr>
+                }
+                @foreach (var item in approvedList) {
+                    <tr>
+                        <td>@(item.Tour?.Title ?? "—")</td>
+                        <td><strong style="color:var(--fg);">@item.NameOfBookMaker</strong></td>
+                        <td>@item.CustomerEmail</td>
+                        <td>@item.PhoneNumber</td>
+                        <td>@item.BookingDateTime.ToString("MMM d, yyyy · HH:mm")</td>
+                        <td>@item.NumberOfPeople</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Canceled -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:#F87171;">Canceled bookings</span>
+            <span class="dt-admin-table-badge">@canceledList.Count</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Tour</th><th>Customer</th><th>Email</th><th>Phone</th><th>Date & Time</th><th>People</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!canceledList.Any()) {
+                    <tr><td colspan="6" style="text-align:center;color:var(--fg-3);">No canceled bookings</td></tr>
+                }
+                @foreach (var item in canceledList) {
+                    <tr>
+                        <td>@(item.Tour?.Title ?? "—")</td>
+                        <td><strong style="color:var(--fg);">@item.NameOfBookMaker</strong></td>
+                        <td>@item.CustomerEmail</td>
+                        <td>@item.PhoneNumber</td>
+                        <td>@item.BookingDateTime.ToString("MMM d, yyyy · HH:mm")</td>
+                        <td>@item.NumberOfPeople</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Past -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:var(--fg-3);">Past bookings</span>
+            <span class="dt-admin-table-badge">@pastList.Count</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Tour</th><th>Customer</th><th>Email</th><th>Phone</th><th>Date & Time</th><th>People</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!pastList.Any()) {
+                    <tr><td colspan="6" style="text-align:center;color:var(--fg-3);">No past bookings</td></tr>
+                }
+                @foreach (var item in pastList) {
+                    <tr>
+                        <td>@(item.Tour?.Title ?? "—")</td>
+                        <td><strong style="color:var(--fg);">@item.NameOfBookMaker</strong></td>
+                        <td>@item.CustomerEmail</td>
+                        <td>@item.PhoneNumber</td>
+                        <td>@item.BookingDateTime.ToString("MMM d, yyyy · HH:mm")</td>
+                        <td>@item.NumberOfPeople</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales-all.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+            events: [
+                @foreach (var item in Model.Where(b => b.Status == "Approved")) {
+                    <text>{ title: "@item.Tour.Title", start: "@item.BookingDateTime.ToString("yyyy-MM-ddTHH:mm:ss")" },</text>
+                }
+            ],
+            eventColor: '#67E8F9',
+            eventTextColor: '#0F1612'
+        });
+        calendar.render();
+    });
+    </script>
+}
+

@@ -1,0 +1,84 @@
+@model IEnumerable<Driver>
+@{
+    // Title/MetaDescription/CanonicalUrl are set in DriversController.Index()
+}
+@Html.Partial("Seo/_DriverStructuredData", Model)
+
+<div class="dt-page-pad">
+    <!-- Mini hero -->
+    <div class="dt-mini-hero" style="margin-bottom:64px;">
+        <div class="dt-mini-hero-overlay"></div>
+        <div style="position:absolute;inset:0;border-radius:40px;background:linear-gradient(155deg,#1a2e2e 0%,#0f1f24 40%,#091418 100%);"></div>
+        <div class="dt-mini-hero-content">
+            <span class="dt-driver-badge-anim">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7Z"/></svg>
+                Trusted local guides
+            </span>
+            <h1>Meet our experienced <em class="serif-it">professional drivers.</em></h1>
+            <p>A small team of background-checked locals. Most have been driving
+                visitors around Lake Ohrid for more than a decade — they grew up here,
+                they speak two or three languages, and they treat your trip the way
+                they'd treat a cousin's wedding day.</p>
+            <div class="dt-driver-hero-stats">
+                <div>
+                    <strong>10+</strong>
+                    <span>Years active</span>
+                </div>
+                <div>
+                    <strong>4.97</strong>
+                    <span>Avg rating</span>
+                </div>
+                <div>
+                    <strong>1200+</strong>
+                    <span>Trips done</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin action -->
+    @if (User.IsInRole("Administrator")) {
+        <div style="display:flex;justify-content:flex-end;padding:0 80px 32px;">
+            @Html.ActionLink("+ Add driver", "Create", null, new { @class = "btn btn-primary" })
+        </div>
+    }
+
+    <!-- Drivers grid -->
+    <div class="dt-drivers-grid-3">
+        @foreach (var item in Model) {
+            <div class="dt-tour" style="border-radius:28px;">
+                <div class="dt-driver-photo-big">
+                    <img src="@(string.IsNullOrWhiteSpace(item.PhotoProfileUrl) ? Url.Content("~/img/background.jpg") : item.PhotoProfileUrl)"
+                         alt="@item.Name" loading="lazy">
+                    @if (item.Rating.HasValue) {
+                        <span class="dt-driver-rating-pill">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.5L22 9.6l-5.2 4.9L18.1 22 12 18.4 5.9 22l1.3-7.5L2 9.6l7.1-1.1Z"/></svg>
+                            @item.Rating.Value.ToString("F1")
+                        </span>
+                    }
+                </div>
+                <div class="dt-driver-meta-big">
+                    <h3 class="dt-driver-name-big">@item.Name</h3>
+                    <p class="dt-driver-bio">@(item.Bio != null && item.Bio.Length > 120 ? item.Bio.Substring(0, 120) + "…" : item.Bio)</p>
+                    <div class="dt-driver-foot">
+                        <span class="dt-driver-rev">@(!string.IsNullOrWhiteSpace(item.CoverageAreas) ? item.CoverageAreas.Split(',')[0].Trim() : "Local expert")</span>
+                        <div style="display:flex;gap:8px;">
+                            @if (User.IsInRole("Administrator")) {
+                                <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-ghost" style="font-size:12px;padding:7px 12px;">Edit</a>
+                                <form method="post" action="@Url.Action("Delete","Drivers",new{id=item.Id})" style="display:inline;" onsubmit="return confirm('Delete this driver?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-ghost" style="font-size:12px;padding:7px 12px;border-color:rgba(248,113,113,0.3);color:#F87171;">Delete</button>
+                                </form>
+                            }
+                            <a href="@Url.Action("Details", new { id = item.Id })" class="dt-tour-book">
+                                Profile
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

@@ -1,0 +1,43 @@
+@model IEnumerable<TaxiBlitz.Domain.Entities.Driver>
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@{
+    var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+}
+@foreach (var driver in Model ?? Enumerable.Empty<TaxiBlitz.Domain.Entities.Driver>())
+{
+    if (string.IsNullOrWhiteSpace(driver.Name)) { continue; }
+
+    var langs    = string.IsNullOrWhiteSpace(driver.Languages)
+        ? new[] { "English", "Macedonian" }
+        : driver.Languages.Split(',', System.StringSplitOptions.RemoveEmptyEntries).Select(l => l.Trim()).ToArray();
+
+    var expYears = driver.ExperienceYears.HasValue ? driver.ExperienceYears.Value.ToString() : "25";
+
+    var bio = string.IsNullOrWhiteSpace(driver.Bio)
+        ? $"{driver.Name} is a professional driver at Taxi Blitz Ohrid with {expYears} years of experience."
+        : driver.Bio;
+
+    var imageUrl = string.IsNullOrWhiteSpace(driver.PhotoProfileUrl)
+        ? siteUrl + "/img/og-image.jpg"
+        : (driver.PhotoProfileUrl.StartsWith("http") ? driver.PhotoProfileUrl : siteUrl + driver.PhotoProfileUrl);
+
+    var schema = new JObject
+    {
+        ["@context"]  = "https://schema.org",
+        ["@type"]     = "Person",
+        ["name"]      = driver.Name,
+        ["jobTitle"]  = "Professional Driver",
+        ["worksFor"]  = new JObject
+        {
+            ["@type"] = "TaxiService",
+            ["name"]  = "Taxi Blitz Ohrid",
+            ["url"]   = siteUrl
+        },
+        ["description"]   = bio,
+        ["knowsLanguage"] = new JArray(langs),
+        ["image"]         = imageUrl
+    };
+
+    <script type="application/ld+json">@Html.Raw(JsonConvert.SerializeObject(schema, Formatting.None))</script>
+}

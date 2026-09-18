@@ -1,0 +1,43 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.swp
+
+## Publish output
+publish/
+out/
+
+## EF migrations lock
+*.mdf
+*.ldf
+
+## User secrets and config overrides
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+.env
+
+## Logs
+logs/
+*.log
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## NuGet
+*.nupkg
+packages/
+
+## KIII project: never commit keys, generated deps or real K8s secrets
+DataProtection-Keys/
+scripts/node_modules/
+k8s/**/secret.yaml
+secrets/

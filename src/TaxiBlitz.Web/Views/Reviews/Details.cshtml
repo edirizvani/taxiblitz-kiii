@@ -1,0 +1,35 @@
+@model Review
+
+@{
+    ViewBag.Title = "Review Details";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Review <em class="serif-it">detail</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("Edit", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" })
+            @Html.ActionLink("Back", "Index", null, new { @class = "btn btn-ghost" })
+        </div>
+    </div>
+
+    <div style="margin:0 80px 64px;max-width:560px;">
+        <div class="dt-form-card">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl)) {
+                    <img src="@Model.ImageUrl" alt="@Model.ReviewerName"
+                         style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--line-2);" />
+                }
+                <div>
+                    <div style="font-size:18px;font-weight:500;color:var(--fg);">@Model.ReviewerName</div>
+                    <div style="font-size:13px;color:var(--fg-3);">@Model.ReviewDate.ToString("MMMM d, yyyy")</div>
+                </div>
+            </div>
+            <p style="font-size:15px;line-height:1.7;color:var(--fg-2);margin:0;">@Model.Text</p>
+        </div>
+    </div>
+</div>
+

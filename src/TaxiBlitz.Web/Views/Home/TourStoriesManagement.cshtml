@@ -1,0 +1,94 @@
+@model IEnumerable<TourPost>
+
+@{
+    ViewBag.Title = "Tour Stories Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var posts        = Model.ToList();
+    var published    = posts.Count(p => p.IsPublished);
+    var drafted      = posts.Count(p => !p.IsPublished);
+    var featured     = posts.Count(p => p.IsFeatured);
+    var totalComments = posts.Sum(p => p.Comments.Count);
+    var totalViews   = posts.Sum(p => p.ViewCount);
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:56px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Stories <em class="serif-it">management</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("+ New story", "Create", "TourStories", null, new { @class = "btn btn-primary" })
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="dt-admin-tiles" style="grid-template-columns:repeat(5,1fr);">
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k">@posts.Count</span>
+            <span class="dt-admin-tile-l">Total</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#4ADE80;">@published</span>
+            <span class="dt-admin-tile-l">Published</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#FACC15;">@drafted</span>
+            <span class="dt-admin-tile-l">Drafts</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:var(--lime);">@featured</span>
+            <span class="dt-admin-tile-l">Featured</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k">@totalViews</span>
+            <span class="dt-admin-tile-l">Total views</span>
+        </div>
+    </div>
+
+    @if (posts.Any()) {
+        <div class="dt-admin-table-section">
+            <table class="dt-admin-table">
+                <thead>
+                    <tr>
+                        <th>Title</th><th>Destination</th><th>Status</th><th>Author</th><th>Date</th><th>Comments</th><th>Views</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var post in posts.OrderByDescending(p => p.CreatedDate)) {
+                        <tr>
+                            <td>
+                                <a href="@Url.Action("Details","TourStories", new { id = post.Id, slug = post.Slug })" target="_blank"
+                                   style="color:var(--lime);text-decoration:none;font-weight:500;">@post.Title</a>
+                            </td>
+                            <td>@(string.IsNullOrEmpty(post.TourDestination) ? "—" : post.TourDestination)</td>
+                            <td>
+                                @if (post.IsFeatured) {
+                                    <span class="dt-status dt-badge-ok">Featured</span>
+                                } else if (post.IsPublished) {
+                                    <span class="dt-status dt-badge-ok">Published</span>
+                                } else {
+                                    <span class="dt-status dt-badge-warn">Draft</span>
+                                }
+                            </td>
+                            <td>@post.Author.UserName</td>
+                            <td>@post.CreatedDate.ToString("MMM d, yyyy")</td>
+                            <td>@post.Comments.Count(c => c.IsApproved)</td>
+                            <td>@post.ViewCount</td>
+                            <td style="display:flex;gap:6px;flex-wrap:wrap;">
+                                @Html.ActionLink("Edit", "Edit", "TourStories", new { id = post.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;" })
+                                @Html.ActionLink("Delete", "Delete", "TourStories", new { id = post.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;border-color:rgba(248,113,113,0.3);color:#F87171;", onclick = "return confirm('Delete this story?')" })
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    } else {
+        <div style="text-align:center;padding:80px 24px;margin:0 80px;background:var(--ink-2);border:1px solid var(--line);border-radius:24px;">
+            <p style="font-size:18px;color:var(--fg-2);margin:0 0 24px;">No stories yet.</p>
+            @Html.ActionLink("+ Create first story", "Create", "TourStories", null, new { @class = "btn btn-primary" })
+        </div>
+    }
+</div>
+

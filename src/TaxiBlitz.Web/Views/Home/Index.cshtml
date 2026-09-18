@@ -1,0 +1,422 @@
+@using System.Linq
+
+@{
+    ViewBag.Title = "Welcome to TaxiBlitz Ohrid";
+    var featuredTours = ViewBag.FeaturedTours as IEnumerable<Tour> ?? Enumerable.Empty<Tour>();
+    var featuredDrivers = ViewBag.FeaturedDrivers as IEnumerable<Driver> ?? Enumerable.Empty<Driver>();
+    var recentStories = ViewBag.RecentStories as IEnumerable<TourPost> ?? Enumerable.Empty<TourPost>();
+    var reviews = (ViewBag.Reviews as IEnumerable<Review> ?? Enumerable.Empty<Review>()).Where(r => r != null).ToList();
+}
+
+<!-- -- HERO ---------------------------------------------------- -->
+<section class="dt-hero">
+    <div class="dt-hero-overlay" style="position:absolute;inset:0;z-index:2;"></div>
+    <div class="dt-hero-content">
+        <span class="eyebrow">Ohrid · Macedonia · 24 / 7</span>
+        <h1 style="font-size:clamp(64px,10vw,130px);line-height:0.95;letter-spacing:-0.04em;font-weight:500;margin:24px 0 0;color:var(--fg);">
+            Explore <em class="serif-it">Ohrid</em><br>locally driven.
+        </h1>
+        <p style="margin:28px 0 0;font-size:18px;line-height:1.55;color:var(--fg-2);max-width:500px;">
+            Private tours, airport transfers, and day trips across Lake Ohrid with experienced local drivers.
+        </p>
+        <div style="display:flex;gap:12px;margin-top:36px;flex-wrap:wrap;">
+            <a href="@Url.Action("Index","Tours")" class="btn btn-primary">Explore tours</a>
+            <a href="@Url.Action("Create","BookingTours")" class="btn btn-ghost">Book a ride</a>
+        </div>
+        <div class="dt-hero-stats">
+            <div style="display:flex;gap:16px;align-items:flex-start;">
+                <span class="dt-hero-stat-num" style="font-family:var(--serif);font-style:italic;font-size:52px;line-height:1;color:var(--lime);">4.97</span>
+                <div style="font-size:13px;color:var(--fg-2);line-height:1.4;padding-top:6px;">Average<br>rating</div>
+            </div>
+            <div style="display:flex;gap:16px;align-items:flex-start;">
+                <span class="dt-hero-stat-num" style="font-family:var(--serif);font-style:italic;font-size:52px;line-height:1;color:var(--lime);">17</span>
+                <div style="font-size:13px;color:var(--fg-2);line-height:1.4;padding-top:6px;">Curated<br>routes</div>
+            </div>
+            <div style="display:flex;gap:16px;align-items:flex-start;">
+                <span class="dt-hero-stat-num" style="font-family:var(--serif);font-style:italic;font-size:52px;line-height:1;color:var(--lime);">24/7</span>
+                <div style="font-size:13px;color:var(--fg-2);line-height:1.4;padding-top:6px;">Available<br>service</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- -- MARQUEE STRIPE ------------------------------------------- -->
+<div style="background:var(--ink-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:24px 0;overflow:hidden;">
+    <div class="dt-marquee-track" style="font-family:var(--serif);font-style:italic;font-size:26px;color:var(--fg-2);letter-spacing:-0.01em;">
+        <span>St. Naum <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Monastery <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Lake Ohrid <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Galicica <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Old Bazaar <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Sveti Jovan <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Struga <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>St. Naum <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Monastery <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Lake Ohrid <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Galicica <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Old Bazaar <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Sveti Jovan <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+        <span>Struga <span style="color:var(--lime);font-style:normal;font-size:18px;">•</span></span>
+    </div>
+</div>
+
+<!-- -- ABOUT ---------------------------------------------------- -->
+<section class="dt-about" style="background:var(--ink-1);">
+    <div class="dt-about-photo dt-about-photo-inner" style="border-radius:32px;overflow:hidden;">
+        <img src="@Url.Content("~/img/caneo.jpg")" alt="Caneo, Ohrid" style="width:100%;height:100%;object-fit:cover;border-radius:32px;">
+        <div style="position:absolute;left:20px;bottom:20px;background:rgba(11,16,14,0.8);backdrop-filter:blur(20px);border:1px solid var(--line-2);border-radius:100px;padding:12px 20px 12px 12px;display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:var(--lime);color:#0F1612;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>
+            </div>
+            <div>
+                <div style="font-size:14px;font-weight:500;color:#EAF0EC;">Est. 2000</div>
+                <div style="font-size:12px;color:rgba(234,240,236,0.7);margin-top:2px;">25+ years of local expertise</div>
+            </div>
+        </div>
+    </div>
+    <div style="padding-top:24px;">
+        <span class="eyebrow">Our story</span>
+        <h2 style="font-size:56px;font-weight:500;letter-spacing:-0.025em;line-height:1.05;margin:16px 0 0;color:var(--fg);">Your local guide<br><em class="serif-it">to Ohrid.</em></h2>
+        <p style="margin:24px 0 32px;font-size:17px;line-height:1.55;color:var(--fg-2);max-width:480px;">
+            TaxiBlitz Ohrid offers personalized tour experiences and reliable airport transfers with drivers who know every corner of the lake region.
+        </p>
+        <ul style="list-style:none;margin:0 0 36px;padding:0;border-top:1px solid var(--line);">
+            @foreach (var item in new[] { "Airport transfers", "Private day-trips", "Custom itineraries", "Group tours" }) {
+                <li style="display:flex;align-items:center;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);font-size:16px;color:var(--fg);">
+                    <span style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--lime);">01</span>
+                    @item
+                </li>
+            }
+        </ul>
+        <div style="display:flex;gap:12px;">
+            <a href="@Url.Action("Index","Tours")" class="btn btn-primary">Browse tours</a>
+            <a href="@Url.Action("Index","Drivers")" class="btn btn-ghost">Meet the drivers</a>
+        </div>
+    </div>
+</section>
+
+<!-- -- FEATURED TOURS ------------------------------------------- -->
+@if (featuredTours.Any()) {
+    <section style="padding:80px 0 120px;background:var(--ink-1);">
+        <div class="dt-section-head">
+            <div>
+                <span class="eyebrow">Handpicked</span>
+                <h2 class="dt-h2">Featured <em class="serif-it">tours</em></h2>
+            </div>
+            <div class="dt-section-head-right">
+                <a href="@Url.Action("Index","Tours")" class="btn btn-ghost" style="font-size:13px;">
+                    All tours
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </div>
+        </div>
+        <div class="dt-tours-grid">
+            @foreach (var tour in featuredTours) {
+                <div class="dt-tour">
+                    <a class="dt-tour-cover-link" href="@(string.IsNullOrWhiteSpace(tour.Slug) ? Url.Action("Details","Tours",new{id=tour.Id}) : Url.Action("DetailsBySlug","Tours",new{slug=tour.Slug}))" tabindex="-1" aria-hidden="true"></a>
+                    <div class="dt-tour-photo">
+                        <img src="@(string.IsNullOrWhiteSpace(tour.PhotoProfileUrl) ? Url.Content("~/img/background.jpg") : tour.PhotoProfileUrl)"
+                             alt="@tour.Title" loading="lazy">
+                        <div class="dt-tour-top">
+                            <span class="dt-tour-badge">Featured</span>
+                            <a href="@(string.IsNullOrWhiteSpace(tour.Slug) ? Url.Action("Details","Tours",new{id=tour.Id}) : Url.Action("DetailsBySlug","Tours",new{slug=tour.Slug}))" class="dt-tour-arrow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                            </a>
+                        </div>
+                        <div class="dt-tour-bottom">
+                            <span class="dt-tour-chip">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                                @tour.Duration
+                            </span>
+                            <span class="dt-tour-chip">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/></svg>
+                                From €@tour.Price
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dt-tour-meta">
+                        <span class="dt-tour-place">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                            @tour.StartingPoint
+                        </span>
+                        <h3 class="dt-tour-title">@tour.Title</h3>
+                        <p class="dt-tour-desc">@(tour.Description != null && tour.Description.Length > 120 ? tour.Description.Substring(0, 120) + "…" : tour.Description)</p>
+                        <div class="dt-tour-foot">
+                            <div class="dt-tour-from">
+                                From <strong>€@tour.Price</strong>
+                            </div>
+                            <a href="@Url.Action("Create","BookingTours", new { tourId = tour.Id })" class="dt-tour-book">
+                                Book
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        @Html.Partial("Seo/_TourListStructuredData", featuredTours)
+    </section>
+}
+
+<!-- -- FOUNDERS -------------------------------------------------- -->
+<section class="dt-founders-section" style="padding:80px 0 120px;background:var(--ink-2);border-top:1px solid var(--line);">
+    <div class="dt-section-head">
+        <div>
+            <span class="eyebrow">Family run · Since 2000</span>
+            <h2 class="dt-h2">Meet the <em class="serif-it">family</em></h2>
+            <p class="dt-page-head-sub" style="max-width:520px;margin-top:12px;">Two brothers, one vision — making every journey through Ohrid unforgettable since 2000.</p>
+        </div>
+    </div>
+    <div class="dt-founders-grid">
+        <!-- Zuli Rizvani -->
+        <div class="dt-founders-card-inner" style="background:var(--ink-1);border:1px solid var(--line);border-radius:32px;">
+            <div class="dt-founder-photo-bg" style="position:relative;min-height:400px;">
+                <img src="@Url.Content("~/img/Zuli-taxi-final.png")" alt="Zuli Rizvani"
+                     style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+                <div style="position:absolute;left:16px;bottom:16px;z-index:3;background:rgba(11,16,14,0.7);backdrop-filter:blur(10px);border:1px solid var(--line-2);border-radius:16px;padding:12px 16px;display:flex;align-items:flex-end;gap:8px;">
+                    <span style="font-family:var(--serif);font-style:italic;font-size:40px;line-height:0.9;color:var(--lime);">25</span>
+                    <span style="font-size:10px;font-family:var(--mono);letter-spacing:0.06em;text-transform:uppercase;color:rgba(234,240,236,0.7);line-height:1.2;padding-bottom:4px;">years<br>experience</span>
+                </div>
+            </div>
+            <div style="padding:32px;display:flex;flex-direction:column;gap:12px;">
+                <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--lime);">Co-founder · Lead Driver</span>
+                <h3 style="font-size:28px;font-weight:500;letter-spacing:-0.025em;line-height:1.05;margin:4px 0 6px;color:var(--fg);">Zuli <em class="serif-it">Rizvani</em></h3>
+                <p style="margin:0;font-size:14px;line-height:1.6;color:var(--fg-2);">
+                    Founder with 25 years of experience in taxi and tour services around Ohrid, Macedonia and Albania. Known for being exceptionally careful, highly professional and very communicative.
+                </p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+                    @foreach (var trait in new[] { "Lake specialist", "Airport transfers", "Multi-lingual" }) {
+                        <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--fg-2);background:rgba(103,232,249,0.06);border:1px solid rgba(103,232,249,0.18);padding:5px 11px;border-radius:999px;">@trait</span>
+                    }
+                </div>
+                <div style="display:flex;gap:12px;margin-top:8px;">
+                    <a href="@Url.Action("Index","Drivers")" class="btn btn-primary" style="flex:1;justify-content:center;font-size:13px;">View profile</a>
+                </div>
+            </div>
+        </div>
+        <!-- Rexhep Rizvani -->
+        <div class="dt-founders-card-inner" style="background:var(--ink-1);border:1px solid var(--line);border-radius:32px;">
+            <div class="dt-founder-photo-bg" style="position:relative;min-height:400px;">
+                <img src="@Url.Content("~/img/lepu-edited.png")" alt="Rexhep Rizvani"
+                     style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+                <div style="position:absolute;left:16px;bottom:16px;z-index:3;background:rgba(11,16,14,0.7);backdrop-filter:blur(10px);border:1px solid var(--line-2);border-radius:16px;padding:12px 16px;display:flex;align-items:flex-end;gap:8px;">
+                    <span style="font-family:var(--serif);font-style:italic;font-size:40px;line-height:0.9;color:var(--lime);">25</span>
+                    <span style="font-size:10px;font-family:var(--mono);letter-spacing:0.06em;text-transform:uppercase;color:rgba(234,240,236,0.7);line-height:1.2;padding-bottom:4px;">years<br>experience</span>
+                </div>
+            </div>
+            <div style="padding:32px;display:flex;flex-direction:column;gap:12px;">
+                <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--lime);">Co-founder · Senior Driver</span>
+                <h3 style="font-size:28px;font-weight:500;letter-spacing:-0.025em;line-height:1.05;margin:4px 0 6px;color:var(--fg);">Rexhep <em class="serif-it">Rizvani</em></h3>
+                <p style="margin:0;font-size:14px;line-height:1.6;color:var(--fg-2);">
+                    Based in Ohrid with 25 years in the taxi industry. Known for his extensive local knowledge and dedication to customer satisfaction, ensuring a smooth and comfortable ride for all passengers.
+                </p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+                    @foreach (var trait in new[] { "Punctual", "Local knowledge", "Group tours" }) {
+                        <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--fg-2);background:rgba(103,232,249,0.06);border:1px solid rgba(103,232,249,0.18);padding:5px 11px;border-radius:999px;">@trait</span>
+                    }
+                </div>
+                <div style="display:flex;gap:12px;margin-top:8px;">
+                    <a href="@Url.Action("Index","Drivers")" class="btn btn-primary" style="flex:1;justify-content:center;font-size:13px;">View profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- -- RECENT STORIES ------------------------------------------- -->
+@if (recentStories.Any()) {
+    <section style="padding:80px 0 120px;background:var(--ink-1);">
+        <div class="dt-section-head">
+            <div>
+                <span class="eyebrow">From the road</span>
+                <h2 class="dt-h2">Tour <em class="serif-it">stories</em></h2>
+            </div>
+            <div class="dt-section-head-right">
+                <a href="@Url.Action("Index","TourStories")" class="btn btn-ghost" style="font-size:13px;">
+                    All stories
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </div>
+        </div>
+        <div class="dt-stories-grid">
+            @foreach (var story in recentStories.Take(3)) {
+                <a href="@Url.Action("Details","TourStories", new { id = story.Id })" class="dt-story-card">
+                    <div class="dt-story-card-photo">
+                        @if (!string.IsNullOrWhiteSpace(story.CoverImage)) {
+                            <img src="@story.CoverImage" alt="@story.Title" loading="lazy">
+                        } else {
+                            <div class="dt-story-fallback-bg" style="width:100%;height:100%;"></div>
+                        }
+                        @if (story.IsFeatured) {
+                            <span class="dt-story-featured">Featured</span>
+                        }
+                    </div>
+                    <div class="dt-story-card-meta">
+                        <span class="dt-story-dest-static dt-story-dest">@story.TourDestination</span>
+                        <h3 class="dt-story-card-title">@story.Title</h3>
+                        <p class="dt-story-card-excerpt">@(story.Excerpt != null && story.Excerpt.Length > 100 ? story.Excerpt.Substring(0,100) + "…" : story.Excerpt)</p>
+                        <div class="dt-story-card-foot">
+                            <div class="dt-story-card-author">
+                                <div class="dt-story-card-avatar"></div>
+                                <div>
+                                    <strong>@story.Author.UserName</strong>
+                                    <span>@story.CreatedDate.ToString("MMM d, yyyy")</span>
+                                </div>
+                            </div>
+                            <span class="dt-story-card-link">
+                                Read
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+<!-- -- TESTIMONIALS --------------------------------------------- -->
+@if (reviews.Any()) {
+    <section style="background:var(--ink-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:100px 0;">
+        <div class="dt-testimonials-inner">
+            <div>
+                <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                    <span class="eyebrow">Guest feedback</span>
+                    @if (User.IsInRole("Administrator")) {
+                        <a href="@Url.Action("Index","Reviews")" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;">Manage reviews</a>
+                    }
+                </div>
+                <h2 style="font-size:52px;font-weight:500;letter-spacing:-0.025em;line-height:1.05;margin:16px 0 0;color:var(--fg);">What our<br><em class="serif-it">guests say.</em></h2>
+                <div style="display:flex;align-items:center;gap:20px;margin-top:40px;">
+                    <span style="font-family:var(--serif);font-style:italic;font-size:88px;line-height:1;color:var(--lime);">4.97</span>
+                    <div>
+                        <div style="display:flex;gap:2px;color:var(--lime);">
+                            @for (int s = 0; s < 5; s++) {
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.5L22 9.6l-5.2 4.9L18.1 22 12 18.4 5.9 22l1.3-7.5L2 9.6l7.1-1.1Z"/></svg>
+                            }
+                        </div>
+                        <div style="font-size:13px;color:var(--fg-3);margin-top:6px;">Based on @reviews.Count review@(reviews.Count != 1 ? "s" : "")</div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                @foreach (var review in reviews.Take(2)) {
+                    int stars = review.Rating.HasValue ? Math.Max(1, Math.Min(5, review.Rating.Value)) : 5;
+                    <div style="background:var(--ink-1);border:1px solid var(--line);border-radius:28px;padding:28px;">
+                        <div style="display:flex;gap:2px;color:var(--lime);">
+                            @for (int s = 1; s <= 5; s++) {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="@(s <= stars ? "currentColor" : "none")" stroke="currentColor" stroke-width="1.5"><path d="m12 2 2.9 6.5L22 9.6l-5.2 4.9L18.1 22 12 18.4 5.9 22l1.3-7.5L2 9.6l7.1-1.1Z"/></svg>
+                            }
+                        </div>
+                        <p style="margin:16px 0 22px;font-size:20px;line-height:1.35;font-weight:400;color:var(--fg);letter-spacing:-0.015em;font-family:var(--serif);font-style:italic;">"@review.Text"</p>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid var(--lime);padding:2px;flex-shrink:0;">
+                                @if (!string.IsNullOrEmpty(review.ImageUrl)) {
+                                    <img src="@review.ImageUrl" alt="@review.ReviewerName" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                } else {
+                                    <div style="width:100%;height:100%;border-radius:50%;background:var(--ink-3);"></div>
+                                }
+                            </div>
+                            <div>
+                                <div style="font-size:15px;font-weight:500;color:var(--fg);">@review.ReviewerName</div>
+                                <div style="font-size:12px;color:var(--fg-3);margin-top:2px;font-family:var(--mono);">@review.ReviewDate.ToString("MMM yyyy")</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- -- REVIEW FORM ---------------------------------------------- -->
+@if (ViewBag.Error == null) {
+    <section class="dt-review-section" style="background:var(--ink-1);">
+        <div style="max-width:600px;margin:0 auto;">
+            <span class="eyebrow">Share your experience</span>
+            <h2 style="font-size:44px;font-weight:500;letter-spacing:-0.025em;margin:16px 0 36px;color:var(--fg);">Write a <em class="serif-it">review</em></h2>
+            <div class="dt-form-card">
+                <form method="post" action="@Url.Action("SubmitReview","Home")" id="reviewForm">
+                    @Html.AntiForgeryToken()
+                    <div class="dt-field">
+                        <label for="reviewerName">Your name</label>
+                        <input type="text" id="reviewerName" name="reviewerName" placeholder="Jane Doe" required>
+                    </div>
+                    <div class="dt-field">
+                        <label for="rating">Rating</label>
+                        <select id="rating" name="rating" required class="dt-field input">
+                            <option value="5">5 · Excellent</option>
+                            <option value="4">4 · Very good</option>
+                            <option value="3">3 · Good</option>
+                            <option value="2">2 · Fair</option>
+                            <option value="1">1 · Poor</option>
+                        </select>
+                    </div>
+                    <div class="dt-field">
+                        <label for="reviewText">Your review</label>
+                        <textarea id="reviewText" name="reviewText" placeholder="Tell us about your experience…" required></textarea>
+                    </div>
+                    <div class="dt-field">
+                        <label for="imageUrl">Photo URL (optional)</label>
+                        <input type="url" id="imageUrl" name="imageUrl" placeholder="https://">
+                    </div>
+                    <button type="submit" class="dt-auth-submit" style="margin-top:8px;">Submit review</button>
+                </form>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- -- CTA BANNER ---------------------------------------------- -->
+<section style="background:var(--ink-1);">
+    <div class="dt-cta-wrap">
+    <div class="dt-cta-inner dt-cta-bg">
+        <div class="dt-cta-overlay" style="position:absolute;inset:0;z-index:2;"></div>
+        <div class="dt-cta-body">
+            <span class="eyebrow">Ready to go?</span>
+            <h2 style="font-size:72px;font-weight:500;letter-spacing:-0.03em;line-height:1;margin:16px 0 28px;color:var(--fg);">Book your <em class="serif-it">Ohrid</em><br>adventure.</h2>
+            <p style="font-size:17px;line-height:1.55;color:var(--fg-2);max-width:480px;margin:0 0 10px;">From the ancient monasteries to the crystal-clear lake — every journey is a discovery with a local guide.</p>
+            <p style="font-size:20px;font-weight:600;color:var(--lime);letter-spacing:0.01em;margin:0 0 28px;font-family:var(--mono);">+389 70 589 874</p>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:18px;">
+                <a href="@Url.Action("Create","BookingTours")" class="btn btn-primary" style="font-size:16px;padding:16px 28px;">
+                    Book online
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+                <button type="button" class="btn btn-ghost" style="font-size:16px;padding:16px 28px;"
+                        onclick="document.getElementById('contactModal').style.display='flex';document.body.style.overflow='hidden'">
+                    Call us now
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3l2 5-2 1.5a11 11 0 0 0 5.5 5.5L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>
+                </button>
+            </div>
+            <p style="font-size:12px;font-family:var(--mono);color:var(--fg-4);letter-spacing:0.06em;text-transform:uppercase;margin:0;">24 / 7 · Average response 4 min</p>
+        </div>
+    </div>
+    </div>
+</section>
+
+@section scripts {
+<script>
+$(function () {
+    $('#reviewForm').on('submit', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: '@Url.Action("SubmitReview","Home")',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function (response) {
+                if (response.success) {
+                    $('#reviewForm')[0].reset();
+                    alert('Thank you for your review!');
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function () {
+                alert('An error occurred. Please try again.');
+            }
+        });
+    });
+});
+</script>
+}
+

@@ -1,0 +1,15 @@
+@model TaxiBlitz.Domain.Seo.TourSeoViewModel
+@using Newtonsoft.Json
+@using TaxiBlitz.Infrastructure.Seo
+@{
+    var schemas = StructuredDataBuilder.BuildTourSchemas(Model);
+}
+
+@if (schemas != null)
+{
+    foreach (var schema in schemas)
+    {
+        <script type="application/ld+json">@Html.Raw(JsonConvert.SerializeObject(schema, Formatting.None))</script>
+    }
+}
+

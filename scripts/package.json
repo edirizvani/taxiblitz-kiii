@@ -1,0 +1,11 @@
+{
+  "name": "taxiblitz-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "favicons": "node generate-favicons.js"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  }
+}

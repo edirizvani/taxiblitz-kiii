@@ -1,0 +1,103 @@
+﻿@model IndexViewModel
+@{
+    ViewBag.Title = "Account settings";
+}
+@section Head {
+    <meta name="robots" content="noindex, nofollow" />
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Account</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Account <em class="serif-it">settings</em></h1>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.StatusMessage as string)) {
+        <div style="margin:0 80px 24px;padding:14px 18px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:12px;color:#4ADE80;font-size:14px;">@ViewBag.StatusMessage</div>
+    }
+
+    <div style="margin:0 80px 64px;max-width:560px;">
+        <div class="dt-form-card">
+            <div style="display:flex;flex-direction:column;gap:0;">
+                <!-- Profile -->
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);">
+                    <div>
+                        <div style="font-size:15px;font-weight:500;color:var(--fg);">Profile</div>
+                        <div style="font-size:13px;color:var(--fg-3);margin-top:2px;">Name, bio, location, preferences</div>
+                    </div>
+                    @Html.ActionLink("Edit", "EditProfile", null, new { @class = "btn btn-ghost", style = "font-size:13px;padding:8px 16px;" })
+                </div>
+
+                <!-- Password -->
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);">
+                    <div>
+                        <div style="font-size:15px;font-weight:500;color:var(--fg);">Password</div>
+                        <div style="font-size:13px;color:var(--fg-3);margin-top:2px;">Manage your login password</div>
+                    </div>
+                    @if (Model.HasPassword) {
+                        @Html.ActionLink("Change", "ChangePassword", null, new { @class = "btn btn-ghost", style = "font-size:13px;padding:8px 16px;" })
+                    } else {
+                        @Html.ActionLink("Create", "SetPassword", null, new { @class = "btn btn-primary", style = "font-size:13px;padding:8px 16px;" })
+                    }
+                </div>
+
+                <!-- External logins -->
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);">
+                    <div>
+                        <div style="font-size:15px;font-weight:500;color:var(--fg);">External logins</div>
+                        <div style="font-size:13px;color:var(--fg-3);margin-top:2px;">@Model.Logins.Count connected</div>
+                    </div>
+                    @Html.ActionLink("Manage", "ManageLogins", null, new { @class = "btn btn-ghost", style = "font-size:13px;padding:8px 16px;" })
+                </div>
+
+                <!-- Phone number -->
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);">
+                    <div>
+                        <div style="font-size:15px;font-weight:500;color:var(--fg);">Phone number</div>
+                        <div style="font-size:13px;color:var(--fg-3);margin-top:2px;">@(Model.PhoneNumber ?? "Not set")</div>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        @Html.ActionLink(Model.PhoneNumber != null ? "Change" : "Add", "AddPhoneNumber", null, new { @class = "btn btn-ghost", style = "font-size:13px;padding:8px 16px;" })
+                        @if (Model.PhoneNumber != null) {
+                            using (Html.BeginForm("RemovePhoneNumber", "Manage", FormMethod.Post, new { style = "margin:0;" })) {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-ghost"
+                                        style="font-size:13px;padding:8px 16px;border-color:rgba(248,113,113,0.3);color:#F87171;">Remove</button>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Two-factor -->
+                @if (Model.HasPassword) {
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;">
+                    <div>
+                        <div style="font-size:15px;font-weight:500;color:var(--fg);">Login verification (2FA)</div>
+                        <div style="font-size:13px;color:var(--fg-3);margin-top:2px;">
+                            @if (Model.TwoFactor) {
+                                <span>A code is emailed to you on each login</span>
+                            } else {
+                                <span>Not enabled — your account uses only a password</span>
+                            }
+                        </div>
+                    </div>
+                    @if (Model.TwoFactor) {
+                        using (Html.BeginForm("DisableTwoFactorAuthentication", "Manage", FormMethod.Post, new { style = "margin:0;" })) {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-ghost" style="font-size:13px;padding:8px 16px;">Disable</button>
+                        }
+                    } else {
+                        using (Html.BeginForm("EnableTwoFactorAuthentication", "Manage", FormMethod.Post, new { style = "margin:0;" })) {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-ghost" style="font-size:13px;padding:8px 16px;">Enable</button>
+                        }
+                    }
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

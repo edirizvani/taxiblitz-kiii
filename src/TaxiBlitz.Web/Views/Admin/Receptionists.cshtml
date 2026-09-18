@@ -1,0 +1,144 @@
+@model IList<TaxiBlitz.Application.ViewModels.ReceptionistSummaryViewModel>
+@using System.Globalization
+
+<style>
+    @@media (max-width: 640px) {
+        .dt-page-head h1 { font-size: 32px !important; }
+        .dt-admin-table-section { margin: 0 16px 40px !important; padding: 0 !important; }
+
+        .dt-admin-table thead { display: none; }
+        .dt-admin-table,
+        .dt-admin-table tbody,
+        .dt-admin-table tr,
+        .dt-admin-table td { display: block; width: 100%; box-sizing: border-box; }
+        .dt-admin-table { border-radius: 0; border: none; background: transparent; }
+        .dt-admin-table tr {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            background: var(--ink-2);
+        }
+        .dt-admin-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+            border-top: 1px solid var(--line);
+        }
+        .dt-admin-table td:first-child { border-top: none; }
+        .dt-admin-table td::before {
+            content: attr(data-label);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--fg-3);
+            flex-shrink: 0;
+            padding-top: 2px;
+            min-width: 80px;
+        }
+        .dt-admin-table td[data-label="Actions"] { flex-direction: column; align-items: stretch; display: flex; }
+        .dt-admin-table td[data-label="Actions"]::before { margin-bottom: 6px; }
+        .dt-admin-table td[data-label="Actions"] .btn { width: 100%; justify-content: center; margin: 2px 0; }
+        .dt-admin-table td[colspan] { justify-content: center; }
+        .dt-admin-table td[colspan]::before { display: none; }
+    }
+</style>
+
+@{
+    ViewBag.Title = "Receptionists";
+    string FormatEur(decimal v) => "€" + v.ToString("F2", CultureInfo.InvariantCulture);
+    var totalEarned  = Model?.Sum(r => r.TotalEarned)       ?? 0m;
+    var totalPending = Model?.Sum(r => r.PendingCommission) ?? 0m;
+}
+
+<div class="dt-page-pad">
+
+@if (TempData["Success"] != null) {
+    <div style="margin:0 48px 24px;padding:14px 20px;border-radius:12px;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);color:#4ADE80;font-size:14px;">
+        @TempData["Success"]
+    </div>
+}
+
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:56px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Receptionists <em class="serif-it">overview</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("My Codes", "AdminCodes", "Admin", new { area = "" }, new { @class = "btn btn-ghost" })
+        </div>
+    </div>
+
+    <!-- Summary tiles -->
+    <div class="dt-admin-tiles">
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:var(--fg);">@(Model?.Count ?? 0)</span>
+            <span class="dt-admin-tile-l">Receptionists</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#4ADE80;">@FormatEur(totalEarned)</span>
+            <span class="dt-admin-tile-l">Total Earned</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#FACC15;">@FormatEur(totalPending)</span>
+            <span class="dt-admin-tile-l">Total Pending</span>
+        </div>
+    </div>
+
+    <!-- Receptionists table -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:var(--fg);">All Receptionists</span>
+            <span class="dt-admin-table-badge">@(Model?.Count ?? 0)</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Name / Email</th>
+                    <th>Codes</th>
+                    <th>Bookings</th>
+                    <th>Approved</th>
+                    <th>Earned</th>
+                    <th>Pending</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any()) {
+                    <tr><td colspan="7" style="text-align:center;color:var(--fg-3);">No receptionists found</td></tr>
+                }
+                @foreach (var r in Model ?? new List<TaxiBlitz.Application.ViewModels.ReceptionistSummaryViewModel>()) {
+                    <tr>
+                        <td data-label="Name / Email">
+                            <div>
+                                <strong style="color:var(--fg);">@(string.IsNullOrWhiteSpace(r.FullName) ? r.Email : r.FullName)</strong>
+                                <br /><small style="color:var(--fg-3);">@r.Email</small>
+                            </div>
+                        </td>
+                        <td data-label="Codes">@r.TotalCodesGenerated</td>
+                        <td data-label="Bookings">@r.TotalBookings</td>
+                        <td data-label="Approved" style="color:#4ADE80;">@r.ApprovedBookings</td>
+                        <td data-label="Earned" style="color:#4ADE80;">@FormatEur(r.TotalEarned)</td>
+                        <td data-label="Pending" style="color:#FACC15;">@FormatEur(r.PendingCommission)</td>
+                        <td data-label="Actions" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                            @Html.ActionLink("Details", "ReceptionistDetail", "Admin", new { userId = r.UserId }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;" })
+                            <form method="post" action="@Url.Action("PayCommission","Admin",new{userId=r.UserId})" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-primary"
+                                        style="font-size:12px;padding:6px 12px;@(r.PendingCommission == 0 ? "opacity:0.4;cursor:not-allowed;" : "")"
+                                        @(r.PendingCommission == 0 ? "disabled" : "")>
+                                    Pay @FormatEur(r.PendingCommission)
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

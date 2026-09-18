@@ -1,0 +1,49 @@
+@{
+    string shareTitle = ViewBag.ShareTitle as string ?? ViewBag.Title as string ?? "TaxiBlitz Ohrid";
+    string shareUrl   = ViewBag.ShareUrl   as string ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    string shareDesc  = ViewBag.ShareDesc  as string ?? "Discover Ohrid with a local driver.";
+    string shareImg   = ViewBag.ShareImg   as string ?? "";
+
+    string fbUrl  = "https://www.facebook.com/sharer/sharer.php?u=" + Uri.EscapeDataString(shareUrl);
+    string twUrl  = "https://twitter.com/intent/tweet?text=" + Uri.EscapeDataString(shareTitle) + "&url=" + Uri.EscapeDataString(shareUrl);
+    string waUrl  = "https://wa.me/?text=" + Uri.EscapeDataString(shareTitle + " " + shareUrl);
+}
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;">
+    <span style="font-size:11px;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-4);">Share</span>
+
+    <!-- WhatsApp -->
+    <a href="@waUrl" target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(37,211,102,0.3);color:#25D366;font-size:12px;font-weight:500;text-decoration:none;transition:background .2s;"
+       onmouseover="this.style.background='rgba(37,211,102,0.08)'" onmouseout="this.style.background='transparent'"
+       title="Share on WhatsApp">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4Z"/></svg>
+        WhatsApp
+    </a>
+
+    <!-- Facebook -->
+    <a href="@fbUrl" target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(59,130,246,0.3);color:#60A5FA;font-size:12px;font-weight:500;text-decoration:none;transition:background .2s;"
+       onmouseover="this.style.background='rgba(59,130,246,0.08)'" onmouseout="this.style.background='transparent'"
+       title="Share on Facebook">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/></svg>
+        Facebook
+    </a>
+
+    <!-- X / Twitter -->
+    <a href="@twUrl" target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);color:var(--fg-2);font-size:12px;font-weight:500;text-decoration:none;transition:background .2s;"
+       onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'"
+       title="Share on X">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M4 20 20 4"/></svg>
+        X
+    </a>
+
+    <!-- Copy link -->
+    <button onclick="tbCopyToClipboard('@shareUrl', this)"
+       style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line-2);color:var(--fg-3);font-size:12px;font-weight:500;background:transparent;cursor:pointer;transition:background .2s;font-family:var(--sans);"
+       onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'"
+       title="Copy link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Copy link
+    </button>
+</div>

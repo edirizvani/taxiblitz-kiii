@@ -1,0 +1,372 @@
+@model Tour
+@using System.Collections.Generic
+@using System.Linq
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Serialization
+
+@{
+    ViewBag.Title = Model.Title;
+    var tourImage   = string.IsNullOrWhiteSpace(Model.PhotoProfileUrl) ? Url.Content("~/img/background.jpg") : Model.PhotoProfileUrl;
+
+    // Convert YouTube watch/share URL to embeddable src
+    string videoUrl = null;
+    if (!string.IsNullOrWhiteSpace(Model.YouTubeLink)) {
+        var _ytm = System.Text.RegularExpressions.Regex.Match(
+            Model.YouTubeLink,
+            @"(?:youtube\.com/watch\?v=|youtu\.be/)([A-Za-z0-9_-]{11})");
+        videoUrl = _ytm.Success
+            ? "https://www.youtube.com/embed/" + _ytm.Groups[1].Value
+            : Model.YouTubeLink;
+    }
+
+    var bookingUrl  = Url.Action("Create", "BookingTours", new { tourId = Model.Id, bookingName = User.Identity.IsAuthenticated ? User.Identity.Name : Model.Title + " booking" });
+    var seoModel    = ViewBag.TourSeo as TourSeoViewModel;
+    var routePoints = seoModel != null && seoModel.RoutePoints != null ? seoModel.RoutePoints.ToList() : new List<TourRoutePointDto>();
+    var faqItems    = seoModel != null && seoModel.FaqItems    != null ? seoModel.FaqItems.ToList()    : new List<FaqItem>();
+    var canonicalUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    ViewBag.ShareTitle = Model.Title + " - TaxiBlitz Ohrid";
+    ViewBag.ShareUrl   = canonicalUrl;
+    ViewBag.ShareDesc  = Model.Description;
+    ViewBag.ShareImg   = tourImage;
+
+    // Build display stops from StartingPoint + RouteStopsText (;-separated) + EndingPoint.
+    // Independent of geocoding so stops always appear when data exists.
+    var displayStops = new List<(int Order, string Name, string Role)>();
+    int _si = 1;
+    if (!string.IsNullOrWhiteSpace(Model.StartingPoint))
+        displayStops.Add((_si++, Model.StartingPoint.Trim(), "Starting point"));
+    if (!string.IsNullOrWhiteSpace(Model.RouteStopsText)) {
+        foreach (var s in Model.RouteStopsText.Replace("\r", "")
+            .Split(new[] { '\n', ';', '|', '•' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)))
+            displayStops.Add((_si++, s, "Route stop"));
+    }
+    if (!string.IsNullOrWhiteSpace(Model.EndingPoint) &&
+        (displayStops.Count == 0 || !displayStops[displayStops.Count - 1].Name.Equals(Model.EndingPoint.Trim(), StringComparison.OrdinalIgnoreCase)))
+        displayStops.Add((_si++, Model.EndingPoint.Trim(), "Ending point"));
+}
+
+@if (seoModel != null) {
+    @Html.Partial("Seo/_TourStructuredData", seoModel)
+}
+
+<!-- -- Cinematic hero ----------------------------------------------- -->
+<div style="position:relative;height:min(680px,82vh);overflow:hidden;background:var(--ink-0);">
+    <img src="@tourImage" alt="@Model.Title" loading="eager" fetchpriority="high"
+         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.03);transition:transform 8s ease;" />
+
+    <!-- Dark vignette overlay -->
+    <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(5,8,7,0.75) 0%, rgba(5,8,7,0.35) 60%, transparent 100%);"></div>
+    <!-- Bottom fade to page bg -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:260px;background:linear-gradient(0deg,var(--ink-0) 0%,transparent 100%);"></div>
+
+    <!-- Breadcrumb top-left -->
+    <nav class="dt-hero-nav">
+        <a href="@Url.Action("Index","Home")" style="color:inherit;text-decoration:none;">Home</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <a href="@Url.Action("Index","Tours")" style="color:inherit;text-decoration:none;">Tours</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <span style="color:rgba(234,240,236,0.85);">@Model.Title</span>
+    </nav>
+
+    <!-- Hero content anchored to bottom-left -->
+    <div class="dt-hero-content">
+        @if (!string.IsNullOrWhiteSpace(Model.StartingPoint)) {
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;color:var(--lime);margin-bottom:16px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                @Model.StartingPoint
+            </span>
+        }
+        <h1 style="font-size:clamp(2.4rem,5vw,4.5rem);font-weight:500;letter-spacing:-0.035em;line-height:1;margin:0 0 28px;">@Model.Title</h1>
+
+        <!-- Quick-stat chips -->
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <span class="hero-chip" style="display:inline-flex;align-items:center;gap:7px;background:rgba(20,28,24,0.72);backdrop-filter:blur(8px);border:1px solid rgba(234,240,236,0.12);border-radius:100px;padding:7px 14px;font-size:13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/></svg>
+                From <strong style="margin-left:4px;">€@Model.Price</strong>
+            </span>
+            <span class="hero-chip" style="display:inline-flex;align-items:center;gap:7px;background:rgba(20,28,24,0.72);backdrop-filter:blur(8px);border:1px solid rgba(234,240,236,0.12);border-radius:100px;padding:7px 14px;font-size:13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                <strong>@Model.Duration</strong>
+            </span>
+            @if (!string.IsNullOrWhiteSpace(Model.EndingPoint)) {
+                <span class="hero-chip" style="display:inline-flex;align-items:center;gap:7px;background:rgba(20,28,24,0.72);backdrop-filter:blur(8px);border:1px solid rgba(234,240,236,0.12);border-radius:100px;padding:7px 14px;font-size:13px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                    <strong>@Model.EndingPoint</strong>
+                </span>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- -- Body: content + sticky booking card ------------------------- -->
+<div class="dt-details-grid">
+
+    <!-- LEFT — article content -->
+    <div>
+
+        <!-- Description -->
+        <div style="padding:48px 0 40px;border-bottom:1px solid var(--line);">
+            <span class="eyebrow">Overview</span>
+            <p style="font-size:18px;line-height:1.65;color:var(--fg-2);margin:18px 0 0;max-width:680px;">@Model.Description</p>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.CulturalHighlights)) {
+            <div style="padding:40px 0;border-bottom:1px solid var(--line);">
+                <span class="eyebrow">Highlights</span>
+                <h2 class="dt-h3" style="margin-top:12px;margin-bottom:16px;">Cultural highlights</h2>
+                <p style="font-size:16px;line-height:1.7;color:var(--fg-2);margin:0;max-width:660px;">@Model.CulturalHighlights</p>
+            </div>
+        }
+
+        @if (displayStops.Any()) {
+            <div style="padding:40px 0;border-bottom:1px solid var(--line);">
+                <span class="eyebrow">Itinerary</span>
+                <h2 class="dt-h3" style="margin-top:12px;margin-bottom:28px;">Route stops</h2>
+                <ul style="list-style:none;margin:0;padding:0;position:relative;">
+                    <!-- Connecting line -->
+                    <div style="position:absolute;left:19px;top:20px;bottom:20px;width:2px;background:linear-gradient(180deg,var(--lime) 0%,var(--line) 100%);border-radius:2px;"></div>
+                    @foreach (var stop in displayStops) {
+                        <li style="display:flex;gap:20px;padding:0 0 28px;position:relative;">
+                            <span style="flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--ink-2);border:2px solid var(--lime);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--lime);font-family:var(--mono);position:relative;z-index:1;">@stop.Order</span>
+                            <div style="padding-top:8px;">
+                                <strong style="color:var(--fg);font-size:16px;">@stop.Name</strong>
+                                <p style="color:var(--fg-3);font-size:14px;line-height:1.6;margin:6px 0 0;">@stop.Role</p>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (displayStops.Any()) {
+            <div style="padding:40px 0;border-bottom:1px solid var(--line);">
+                <span class="eyebrow">Navigation</span>
+                <h2 class="dt-h3" style="margin-top:12px;margin-bottom:20px;">Route map</h2>
+                <div class="dt-map-wrap">
+                    <div id="tourRouteMap" style="width:100%;height:100%;"></div>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(videoUrl)) {
+            <div style="padding:40px 0;border-bottom:1px solid var(--line);">
+                <span class="eyebrow">Preview</span>
+                <h2 class="dt-h3" style="margin-top:12px;margin-bottom:20px;">Tour video</h2>
+                <div style="aspect-ratio:16/9;border-radius:20px;overflow:hidden;background:var(--ink-2);border:1px solid var(--line);">
+                    <iframe src="@videoUrl" title="@Model.Title video" allowfullscreen loading="lazy"
+                            style="width:100%;height:100%;border:none;"></iframe>
+                </div>
+            </div>
+        }
+
+        @if (faqItems.Any()) {
+            <div style="padding:40px 0;">
+                <span class="eyebrow">Questions</span>
+                <h2 class="dt-h3" style="margin-top:12px;margin-bottom:24px;">Frequently asked</h2>
+                <div class="dt-faq">
+                    @foreach (var faq in faqItems) {
+                        <details>
+                            <summary>
+                                @faq.Question
+                                <span class="dt-faq-toggle">+</span>
+                            </summary>
+                            <p>@faq.Answer</p>
+                        </details>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- RIGHT — sticky booking card -->
+    <div class="dt-sidebar">
+        <div style="background:var(--ink-2);border:1px solid var(--line);border-radius:24px;padding:32px;margin-top:48px;">
+            @Html.AntiForgeryToken()
+            <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 6px;">
+                <h3 style="font-size:20px;font-weight:500;color:var(--fg);margin:0;">Book this tour</h3>
+                @if (User.Identity.IsAuthenticated) {
+                    bool isFav = ViewBag.IsFavourite is bool favBool && favBool;
+                    <button class="fav-btn @(isFav ? "fav-active" : "")"
+                            onclick="tbToggleFavourite(@Model.Id, this)"
+                            title="@(isFav ? "Remove from wishlist" : "Save to wishlist")"
+                            style="background:var(--ink-3);border:1px solid var(--line);border-radius:50%;width:36px;height:36px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:@(isFav ? "#F87171" : "var(--fg-3)");">
+                        <svg class="fav-icon" width="16" height="16" viewBox="0 0 24 24" fill="@(isFav ? "currentColor" : "none")" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+                    </button>
+                }
+            </div>
+            <p style="font-size:13px;color:var(--fg-4);margin:0 0 24px;font-family:var(--mono);">Instant confirmation · Free cancellation 24h prior</p>
+
+            <!-- Trip summary rows -->
+            <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:24px;">
+                @foreach (var kv in new[] {
+                    new { K = "Price",    V = "From €" + Model.Price  },
+                    new { K = "Duration", V = Model.Duration           },
+                    new { K = "From",     V = Model.StartingPoint      },
+                    new { K = "To",       V = Model.EndingPoint        }
+                }) {
+                    if (!string.IsNullOrWhiteSpace(kv.V)) {
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line);">
+                            <span style="font-size:11px;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-4);">@kv.K</span>
+                            <span style="font-size:14px;font-weight:500;color:var(--fg);">@kv.V</span>
+                        </div>
+                    }
+                }
+            </div>
+
+            @Html.Partial("_WeatherWidget")
+
+            <a href="@bookingUrl" class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:14px 0;margin-bottom:10px;">
+                Book now
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a href="@Url.Action("Index","Tours")" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:14px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                Back to tours
+            </a>
+            @if (User.IsInRole("Administrator")) {
+                <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
+                    @Html.ActionLink("Edit tour", "Edit", new { id = Model.Id }, new { @class = "btn btn-ghost", style = "width:100%;justify-content:center;font-size:13px;" })
+                </div>
+            }
+        </div>
+
+        <!-- Social share -->
+        @Html.Partial("_SocialShare")
+
+        <!-- Info note -->
+        <p style="text-align:center;font-size:12px;color:var(--fg-4);margin-top:16px;line-height:1.6;">
+            Questions? <a href="@Url.Action("Index","Home")" style="color:var(--lime);text-decoration:none;">Contact us</a> — we reply within the hour.
+        </p>
+    </div>
+</div>
+
+@{
+    var localLeafletCss = Url.Content("~/lib/leaflet/leaflet.css");
+    var localLeafletJs  = Url.Content("~/lib/leaflet/leaflet.js");
+    var hasLocalLeaflet = System.IO.File.Exists(System.IO.Path.Combine(Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>().WebRootPath, "lib", "leaflet", "leaflet.js"));
+}
+
+@section Head {
+    <meta property="og:title"       content="@Html.Encode(Model.Title) - TaxiBlitz Ohrid" />
+    <meta property="og:description" content="@Html.Encode(Model.Description)" />
+    <meta property="og:image"       content="@tourImage" />
+    <meta property="og:url"         content="@canonicalUrl" />
+    <meta property="og:type"        content="product" />
+    <meta name="twitter:card"       content="summary_large_image" />
+    @if (hasLocalLeaflet) {
+        <link rel="stylesheet" href="@localLeafletCss" />
+    } else {
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    }
+    <style>
+        .dt-hero-nav {
+            position: absolute;
+            top: 32px;
+            left: 80px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: rgba(234,240,236,0.55);
+        }
+        .dt-hero-content {
+            position: absolute;
+            bottom: 64px;
+            left: 80px;
+            max-width: 640px;
+        }
+        .dt-details-grid {
+            padding: 0 80px 80px;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 48px;
+            align-items: start;
+            margin-top: 0;
+        }
+        .dt-sidebar {
+            position: sticky;
+            top: 100px;
+        }
+        .dt-map-wrap {
+            height: 420px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: var(--ink-2);
+            border: 1px solid var(--line);
+            isolation: isolate;
+        }
+        /* Hero always sits over a dark vignette — keep text light in both themes */
+        .dt-hero-content h1,
+        .dt-hero-content strong { color: #EAF0EC; }
+        .dt-hero-content .hero-chip { color: rgba(184,194,188,0.85); }
+        @@media (max-width: 860px) {
+            .dt-hero-nav {
+                left: 24px;
+                top: 20px;
+                font-size: 12px;
+            }
+            .dt-hero-content {
+                bottom: 32px;
+                left: 24px;
+                right: 24px;
+                max-width: 100%;
+            }
+            .dt-details-grid {
+                padding: 0 20px 48px;
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .dt-sidebar {
+                position: static;
+            }
+            .dt-sidebar > div:first-of-type {
+                margin-top: 0 !important;
+                margin-bottom: 32px;
+            }
+        }
+        @@media (max-width: 480px) {
+            .dt-hero-nav {
+                display: none;
+            }
+            .dt-hero-content {
+                bottom: 20px;
+                left: 16px;
+                right: 16px;
+            }
+            .dt-details-grid {
+                padding: 0 16px 32px;
+            }
+            .dt-map-wrap {
+                height: 260px;
+            }
+        }
+    </style>
+}
+
+@section scripts {
+    @if (hasLocalLeaflet) {
+        <script src="@localLeafletJs"></script>
+    } else {
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    }
+    <script src="@Url.Content("~/js/tour-route-map.js")"></script>
+    <script>
+        window.__tourRoutePoints = @Html.Raw(JsonConvert.SerializeObject(routePoints,
+            new JsonSerializerSettings {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            }));
+        document.addEventListener('DOMContentLoaded', function () {
+            // Subtle parallax on hero image
+            var heroImg = document.querySelector('[data-hero-img]');
+            if (heroImg) {
+                window.addEventListener('scroll', function () {
+                    heroImg.style.transform = 'scale(1.03) translateY(' + (window.scrollY * 0.08) + 'px)';
+                }, { passive: true });
+            }
+            if (window.TourRouteMap) {
+                window.TourRouteMap.init('tourRouteMap', window.__tourRoutePoints);
+            }
+        });
+    </script>
+}

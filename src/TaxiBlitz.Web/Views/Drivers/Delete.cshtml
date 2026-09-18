@@ -1,0 +1,29 @@
+@model Driver
+
+@{
+    ViewBag.Title = "Delete Driver";
+}
+
+<div class="dt-page-pad" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+    <div style="max-width:480px;width:100%;text-align:center;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </div>
+        <h2 style="font-size:28px;font-weight:500;color:var(--fg);margin:0 0 12px;">Delete driver?</h2>
+        <p style="color:var(--fg-3);margin:0 0 24px;">This action cannot be undone.</p>
+        <div style="background:var(--ink-2);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:left;margin-bottom:28px;">
+            <strong style="color:var(--fg);font-size:18px;">@Model.Name</strong>
+            @if (!string.IsNullOrWhiteSpace(Model.Bio)) {
+                <p style="color:var(--fg-3);font-size:14px;margin:8px 0 0;">@(Model.Bio.Length > 100 ? Model.Bio.Substring(0,100) + "…" : Model.Bio)</p>
+            }
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;">
+            @using (Html.BeginForm()) {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-ghost" style="border-color:rgba(248,113,113,0.3);color:#F87171;">Delete permanently</button>
+            }
+            @Html.ActionLink("Cancel", "Index", null, new { @class = "btn btn-ghost" })
+        </div>
+    </div>
+</div>
+

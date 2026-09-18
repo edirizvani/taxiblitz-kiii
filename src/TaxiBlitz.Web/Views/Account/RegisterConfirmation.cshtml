@@ -1,0 +1,77 @@
+@{
+    ViewBag.Title = "Check your email";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .tb-body { padding-top: 0 !important; }
+</style>
+
+<div class="dt-auth">
+    <div class="dt-auth-left">
+        <div class="dt-auth-content">
+            <div class="dt-auth-brand">
+                <a class="dt-brand" href="@Url.Action("Index","Home")">
+                    <span class="dt-brand-mark"><span class="dt-brand-mark-dot"></span></span>
+                    <span class="dt-brand-text">TaxiBlitz <em class="serif-it">Ohrid</em></span>
+                </a>
+            </div>
+            <div class="dt-auth-card">
+                @if (TempData["Info"] != null)
+                {
+                    <div class="auth-info-message">@TempData["Info"]</div>
+                }
+                <div style="text-align:center;margin-bottom:24px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#e63946" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="width:56px;height:56px;">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m2 7 10 7 10-7"/>
+                    </svg>
+                </div>
+                <h2 class="dt-auth-h" style="text-align:center;">Check your<br><em class="serif-it">inbox.</em></h2>
+                @if (!string.IsNullOrEmpty(ViewBag.Email as string))
+                {
+                    <p class="dt-auth-sub" style="text-align:center;">
+                        We sent a confirmation link to<br>
+                        <strong>@ViewBag.Email</strong>
+                    </p>
+                }
+                else
+                {
+                    <p class="dt-auth-sub" style="text-align:center;">
+                        We sent a confirmation link to your email address.
+                    </p>
+                }
+                <p style="color:#888;font-size:13px;text-align:center;margin-top:16px;line-height:1.6;">
+                    Click the link in the email to activate your account.<br>
+                    The link expires in 24 hours. Check your spam folder if you don't see it.
+                </p>
+                <div style="margin-top:32px;text-align:center;">
+                    <a href="@Url.Action("Login","Account")" class="dt-auth-submit" style="display:inline-flex;text-decoration:none;">
+                        Back to login
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                </div>
+                <div style="margin-top:20px;text-align:center;">
+                    @using (Html.BeginForm("ResendConfirmation", "Account", FormMethod.Post, new { @style = "display:inline;" })) {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="email" value="@ViewBag.Email" />
+                        <button type="submit" class="dt-auth-link" style="background:none;border:none;cursor:pointer;padding:0;font-size:13px;">
+                            Didn't receive it? Send again
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dt-auth-right">
+        <div class="dt-auth-photo"></div>
+        <div class="dt-auth-photo-overlay"></div>
+        <div class="dt-auth-photo-quote">
+            "Your adventure in Ohrid is <em>just getting started.</em>"
+            <div class="dt-auth-photo-author">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                TaxiBlitz Ohrid
+            </div>
+        </div>
+    </div>
+</div>

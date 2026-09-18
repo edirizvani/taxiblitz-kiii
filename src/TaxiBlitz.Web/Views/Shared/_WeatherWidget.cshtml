@@ -1,0 +1,22 @@
+@using TaxiBlitz.Domain.Entities
+@{
+    var weather = ViewBag.Weather as WeatherCache;
+}
+@if (weather != null) {
+    string iconUrl = $"https://openweathermap.org/img/wn/{weather.IconCode}@2x.png";
+    <div style="background:var(--ink-3);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+        <img src="@iconUrl" alt="@weather.ConditionText" width="44" height="44" style="flex-shrink:0;" />
+        <div>
+            <div style="font-size:11px;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-4);margin-bottom:3px;">
+                Weather · @weather.Location
+            </div>
+            <div style="font-size:18px;font-weight:600;color:var(--fg);">
+                @Math.Round(weather.TempCelsius)°C
+                <span style="font-size:13px;font-weight:400;color:var(--fg-3);margin-left:6px;">@System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(weather.ConditionText)</span>
+            </div>
+            <div style="font-size:12px;color:var(--fg-4);margin-top:2px;">
+                @Math.Round(weather.TempMin)° – @Math.Round(weather.TempMax)° · @weather.ForecastDate.ToString("MMM d")
+            </div>
+        </div>
+    </div>
+}

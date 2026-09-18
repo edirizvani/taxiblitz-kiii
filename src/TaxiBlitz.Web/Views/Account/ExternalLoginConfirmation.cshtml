@@ -1,0 +1,93 @@
+﻿@model ExternalLoginConfirmationViewModel
+@{
+    ViewBag.Title = "Complete registration";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .tb-body { padding-top: 0 !important; }
+</style>
+
+<div class="dt-auth">
+    <div class="dt-auth-left">
+        <div class="dt-auth-content">
+            <div class="dt-auth-brand">
+                <a class="dt-brand" href="@Url.Action("Index","Home")">
+                    <span class="dt-brand-mark"><span class="dt-brand-mark-dot"></span></span>
+                    <span class="dt-brand-text">TaxiBlitz <em class="serif-it">Ohrid</em></span>
+                </a>
+            </div>
+
+            <div class="dt-auth-card">
+                @using (Html.BeginForm("ExternalLoginConfirmation", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, null, new { role = "form", id = "external-confirm-form" })) {
+                    @Html.AntiForgeryToken()
+
+                    <h2 class="dt-auth-h">One last<br><em class="serif-it">step.</em></h2>
+                    <p class="dt-auth-sub">Signed in via <strong>@(Model?.LoginProvider ?? ViewBag.LoginProvider as string ?? "Google")</strong>. Confirm your details to complete your TaxiBlitz account.</p>
+
+                    @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+
+                    @Html.HiddenFor(m => m.LoginProvider)
+                    @Html.HiddenFor(m => m.ProviderKey)
+                    @Html.HiddenFor(m => m.ProviderDisplayName)
+                    @Html.HiddenFor(m => m.ReturnUrl)
+                    @Html.HiddenFor(m => m.FirstName)
+                    @Html.HiddenFor(m => m.LastName)
+
+                    <div class="dt-field">
+                        @Html.LabelFor(m => m.Email)
+                        @Html.TextBoxFor(m => m.Email, new { @class = "", placeholder = "your@email.com", autocomplete = "email" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-validation-error" })
+                    </div>
+
+                    <div class="dt-field">
+                        <label>Phone number</label>
+                        <div class="dt-phone-row">
+                            <select id="extPhonePrefix" class="dt-phone-prefix"></select>
+                            <input id="extPhoneCustom" type="text" placeholder="+XX" class="dt-phone-custom" style="display:none;">
+                            <input id="extPhoneLocal" type="tel" placeholder="70 000 000" class="dt-phone-local">
+                        </div>
+                        <input type="hidden" id="PhoneNumber" name="PhoneNumber" />
+                        @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "field-validation-error" })
+                    </div>
+
+                    <button type="submit" class="dt-auth-submit">
+                        Complete registration
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="dt-auth-right">
+        <div class="dt-auth-photo"></div>
+        <div class="dt-auth-photo-overlay"></div>
+        <div class="dt-auth-photo-quote">
+            "Every road around Ohrid tells a story — let us show you <em>all of them.</em>"
+            <div class="dt-auth-photo-author">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                Zuli Rizvani
+                <span>· TaxiBlitz Ohrid</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validate-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="@Url.Content("~/js/phone-prefix.js")"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            initPhonePrefix({
+                formSel:   '#external-confirm-form',
+                selectSel: '#extPhonePrefix',
+                customSel: '#extPhoneCustom',
+                localSel:  '#extPhoneLocal',
+                hiddenSel: '#PhoneNumber'
+            });
+        });
+    </script>
+}
+

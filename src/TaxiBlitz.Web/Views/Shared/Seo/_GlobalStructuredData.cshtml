@@ -1,0 +1,32 @@
+﻿@using System
+@using Newtonsoft.Json
+@{
+    var siteName = "Taxi Blitz Ohrid";
+    var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Url.Content("~/")}".TrimEnd('/') + "/";
+    var description = "Taxi Blitz Ohrid offers guided tours, airport transfers, and local travel experiences in Ohrid, North Macedonia.";
+    var phone = "+38970589874";
+    var email = "zulirizvani@gmail.com";
+    var schemas = StructuredDataBuilder.BuildGlobalSchemas(siteName, siteUrl, description, phone, email);
+    var reviewAverage = ViewBag.ReviewRatingAverage == null ? (double?)null : (double)ViewBag.ReviewRatingAverage;
+    var reviewCount = ViewBag.ReviewRatingCount == null ? (int?)null : (int)ViewBag.ReviewRatingCount;
+    if (reviewAverage.HasValue && reviewCount.GetValueOrDefault() > 0)
+    {
+        var travelAgency = schemas[2];
+        travelAgency["aggregateRating"] = new Newtonsoft.Json.Linq.JObject
+        {
+            ["@type"] = "AggregateRating",
+            ["ratingValue"] = Math.Round(reviewAverage.Value, 1),
+            ["reviewCount"] = reviewCount.Value,
+            ["bestRating"] = 5,
+            ["worstRating"] = 1
+        };
+    }
+}
+
+@if (schemas != null)
+{
+    foreach (var schema in schemas)
+    {
+        <script type="application/ld+json">@Html.Raw(JsonConvert.SerializeObject(schema, Formatting.None))</script>
+    }
+}

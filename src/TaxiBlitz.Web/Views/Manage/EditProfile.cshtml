@@ -1,0 +1,114 @@
+@model EditProfileViewModel
+@{
+    ViewBag.Title = "Edit profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Account</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Edit <em class="serif-it">profile.</em></h1>
+        </div>
+    </div>
+
+    <div style="margin:0 80px 64px;max-width:560px;">
+        @if (TempData["SuccessMessage"] != null) {
+            <div style="margin-bottom:24px;padding:14px 18px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:12px;color:#4ADE80;font-size:14px;">@TempData["SuccessMessage"]</div>
+        }
+        @using (Html.BeginForm("EditProfile", "Manage", FormMethod.Post)) {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary("", new { @class = "validation-summary-errors", style = "margin-bottom:20px;" })
+
+            <div class="dt-form-card" style="padding:28px 28px 24px;">
+                <div style="margin-bottom:6px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-3);">Name</div>
+
+                <div style="display:flex;gap:16px;margin-bottom:0;">
+                    <div class="dt-field" style="flex:1;margin:0;">
+                        @Html.LabelFor(m => m.FirstName)
+                        @Html.TextBoxFor(m => m.FirstName, new { placeholder = "Jane", autocomplete = "given-name" })
+                        @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "field-validation-error" })
+                    </div>
+                    <div class="dt-field" style="flex:1;margin:0;">
+                        @Html.LabelFor(m => m.LastName)
+                        @Html.TextBoxFor(m => m.LastName, new { placeholder = "Smith", autocomplete = "family-name" })
+                        @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "field-validation-error" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="dt-form-card" style="padding:28px 28px 24px;margin-top:16px;">
+                <div style="margin-bottom:16px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-3);">About you</div>
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Bio)
+                    @Html.TextAreaFor(m => m.Bio, new { rows = 3, placeholder = "A short bio visible to your drivers…", style = "resize:vertical;" })
+                    @Html.ValidationMessageFor(m => m.Bio, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div style="display:flex;gap:16px;margin-bottom:16px;">
+                    <div class="dt-field" style="flex:1;margin:0;">
+                        @Html.LabelFor(m => m.City)
+                        @Html.TextBoxFor(m => m.City, new { placeholder = "Ohrid", autocomplete = "address-level2" })
+                    </div>
+                    <div class="dt-field" style="flex:1;margin:0;">
+                        @Html.LabelFor(m => m.Country)
+                        @Html.TextBoxFor(m => m.Country, new { placeholder = "Macedonia", autocomplete = "country-name" })
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:16px;margin-bottom:0;">
+                    <div class="dt-field" style="flex:1;margin:0;">
+                        @Html.LabelFor(m => m.DateOfBirth)
+                        @Html.TextBoxFor(m => m.DateOfBirth, "{0:yyyy-MM-dd}", new { type = "date", autocomplete = "bday" })
+                    </div>
+                    <div class="dt-field" style="flex:1;margin:0;">
+                        @Html.LabelFor(m => m.Gender)
+                        @Html.DropDownListFor(m => m.Gender,
+                            new SelectList(new[] {
+                                new { Value = "", Text = "Prefer not to say" },
+                                new { Value = "Male", Text = "Male" },
+                                new { Value = "Female", Text = "Female" },
+                                new { Value = "Other", Text = "Other" }
+                            }, "Value", "Text", Model.Gender ?? ""),
+                            new { style = "width:100%;" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="dt-form-card" style="padding:28px 28px 24px;margin-top:16px;">
+                <div style="margin-bottom:16px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-3);">Preferences</div>
+
+                <div class="dt-field" style="margin-bottom:0;">
+                    @Html.LabelFor(m => m.PreferredLanguage)
+                    @Html.DropDownListFor(m => m.PreferredLanguage,
+                        new SelectList(new[] {
+                            new { Value = "", Text = "No preference" },
+                            new { Value = "English", Text = "English" },
+                            new { Value = "Macedonian", Text = "Macedonian" },
+                            new { Value = "Albanian", Text = "Albanian" },
+                            new { Value = "German", Text = "German" },
+                            new { Value = "French", Text = "French" },
+                            new { Value = "Italian", Text = "Italian" },
+                            new { Value = "Russian", Text = "Russian" }
+                        }, "Value", "Text", Model.PreferredLanguage ?? ""),
+                        new { style = "width:100%;" })
+                </div>
+            </div>
+
+            <div style="margin-top:24px;">
+                <button type="submit" class="btn btn-primary" style="padding:12px 28px;font-size:15px;">
+                    Save changes
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;margin-left:6px;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+                @Html.ActionLink("Cancel", "Index", null, new { @class = "btn btn-ghost", style = "margin-left:12px;font-size:14px;" })
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validate-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+

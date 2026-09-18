@@ -1,0 +1,61 @@
+@model BookingTour
+
+@{
+    ViewBag.Title = "Booking Details";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Booking <em class="serif-it">detail</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("Edit", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" })
+            @Html.ActionLink("Back", "AdministratorIndex", null, new { @class = "btn btn-ghost" })
+        </div>
+    </div>
+
+    <div style="margin:0 80px 64px;max-width:560px;">
+        <div class="dt-form-card">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div>
+                    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-4);">Customer</span>
+                    <div style="font-size:16px;font-weight:500;color:var(--fg);margin-top:6px;">@Model.NameOfBookMaker</div>
+                </div>
+                <div>
+                    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-4);">Status</span>
+                    <div style="margin-top:6px;">
+                        @{ string badgeClass = Model.Status == "Approved" ? "dt-badge-ok" : Model.Status == "Pending" ? "dt-badge-warn" : "dt-badge-bad"; }
+                        <span class="dt-status @badgeClass">@Model.Status</span>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-4);">Tour</span>
+                    <div style="font-size:15px;color:var(--fg-2);margin-top:6px;">@(Model.Tour?.Title ?? "—")</div>
+                </div>
+                <div>
+                    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-4);">Driver</span>
+                    <div style="font-size:15px;color:var(--fg-2);margin-top:6px;">@(Model.Driver?.Name ?? "Not assigned")</div>
+                </div>
+                <div>
+                    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-4);">Email</span>
+                    <div style="font-size:15px;color:var(--fg-2);margin-top:6px;">@Model.CustomerEmail</div>
+                </div>
+                <div>
+                    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-4);">Phone</span>
+                    <div style="font-size:15px;color:var(--fg-2);margin-top:6px;">@Model.PhoneNumber</div>
+                </div>
+                <div>
+                    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-4);">People</span>
+                    <div style="font-size:15px;color:var(--fg-2);margin-top:6px;">@Model.NumberOfPeople</div>
+                </div>
+                <div>
+                    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-4);">Date & Time</span>
+                    <div style="font-size:15px;color:var(--fg-2);margin-top:6px;">@Model.BookingDateTime.ToString("MMM d, yyyy · HH:mm")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

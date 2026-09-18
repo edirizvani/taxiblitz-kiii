@@ -1,0 +1,234 @@
+@model IEnumerable<BookingTour>
+@{
+    ViewBag.Title = "My Bookings";
+    var all       = Model.ToList();
+    var approved  = all.Count(b => b.Status == "Approved");
+    var pending   = all.Count(b => b.Status == "Pending");
+    var cancelled = all.Count(b => b.Status == "Canceled" || b.Status == "Cancelled");
+}
+
+@Html.AntiForgeryToken()
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Account</span>
+            <h1 style="font-size:64px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">My <em class="serif-it">bookings</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            <a href="@Url.Action("Create","BookingTours")" class="btn btn-primary">+ New booking</a>
+        </div>
+    </div>
+
+    <!-- Stats tiles -->
+    <div class="dt-stats-row" style="padding-bottom:48px;">
+        <div class="dt-stat">
+            <span class="dt-stat-k">@all.Count</span>
+            <span class="dt-stat-l">Total bookings</span>
+        </div>
+        <div class="dt-stat">
+            <span class="dt-stat-k" style="color:#4ADE80;">@approved</span>
+            <span class="dt-stat-l">Approved</span>
+        </div>
+        <div class="dt-stat">
+            <span class="dt-stat-k" style="color:#FACC15;">@pending</span>
+            <span class="dt-stat-l">Pending</span>
+        </div>
+        <div class="dt-stat">
+            <span class="dt-stat-k" style="color:#F87171;">@cancelled</span>
+            <span class="dt-stat-l">Cancelled</span>
+        </div>
+    </div>
+
+    @if (!all.Any()) {
+        <div style="text-align:center;padding:64px 24px;background:var(--ink-2);margin:0 80px;border-radius:24px;border:1px solid var(--line);">
+            <p style="font-size:18px;color:var(--fg-2);margin:0 0 24px;">You have no bookings yet.</p>
+            <a href="@Url.Action("Create","BookingTours")" class="btn btn-primary">Book a tour</a>
+        </div>
+    } else {
+        <div class="dt-booking-table">
+            <div class="dt-table-head">
+                <span>Tour</span>
+                <span>Driver</span>
+                <span>Date &amp; Time</span>
+                <span>People</span>
+                <span>Price</span>
+                <span>Status</span>
+                <span>Actions</span>
+            </div>
+            @foreach (var item in all.OrderBy(b => b.BookingDateTime)) {
+                string badgeClass = item.Status == "Approved" ? "dt-badge-ok" : item.Status == "Pending" ? "dt-badge-warn" : "dt-badge-bad";
+                decimal tourPrice = item.Tour?.Price ?? 0m;
+                decimal discountAmount = item.DiscountAmount ?? 0m;
+                decimal finalPrice = tourPrice - discountAmount;
+                string waText = Uri.EscapeDataString("TaxiBlitz Booking #" + item.Id + "\nTour: " + (item.Tour?.Title ?? "-") + "\nDate: " + item.BookingDateTime.ToString("MMM d, yyyy HH:mm") + "\nPeople: " + item.NumberOfPeople + "\nStatus: " + item.Status + "\n\nFor questions: +389 70 589 874");
+                <div class="dt-table-row">
+                    <div class="dt-table-tour">
+                        <div class="dt-table-thumb">
+                            @if (item.Tour != null && !string.IsNullOrWhiteSpace(item.Tour.PhotoProfileUrl)) {
+                                <img src="@item.Tour.PhotoProfileUrl" alt="@item.Tour.Title" loading="lazy">
+                            }
+                        </div>
+                        <div>
+                            <strong>@(item.Tour?.Title ?? "-")</strong>
+                            <span class="dt-table-sub">@item.NameOfBookMaker</span>
+                        </div>
+                    </div>
+                    <span>@(item.Driver?.Name ?? "Not assigned")</span>
+                    <span>@item.BookingDateTime.ToString("MMM d, yyyy HH:mm")</span>
+                    <span>@item.NumberOfPeople</span>
+                    <span>
+                        @if (item.Tour != null) {
+                            <strong>€@finalPrice.ToString("F2")</strong>
+                            @if (discountAmount > 0) {
+                                <div style="font-size:11px;color:var(--fg-3);">€@tourPrice.ToString("F2") - €@discountAmount.ToString("F2")</div>
+                            }
+                        } else {
+                            <span>-</span>
+                        }
+                    </span>
+                    <span><span class="dt-status @badgeClass">@item.Status</span></span>
+                    <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+                        @if (item.Status == "Approved") {
+                            <a href="@Url.Action("DownloadReceipt","BookingTours", new { id = item.Id })"
+                               class="btn btn-ghost" style="font-size:11px;padding:5px 10px;gap:5px;" title="Download PDF receipt">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Receipt
+                            </a>
+                        }
+                        <a href="https://wa.me/38970589874?text=@Html.Raw(waText)"
+                           target="_blank" rel="noopener"
+                           class="btn btn-ghost" style="font-size:11px;padding:5px 10px;gap:5px;color:#25D366;border-color:rgba(37,211,102,0.3);" title="Share via WhatsApp">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4Z"/></svg>
+                            WhatsApp
+                        </a>
+                        @if (item.Status != "Canceled" && item.Status != "Cancelled") {
+                            <button class="dt-table-cancel" onclick="cancelBooking(@item.Id, '@item.BookingDateTime.ToString("o")')">
+                                Cancel
+                            </button>
+                        }
+                    </span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Head {
+<style>
+@@media (max-width: 640px) {
+    /* Hide the header row — labels are shown inline */
+    .dt-booking-table .dt-table-head { display: none !important; }
+
+    /* Turn each row into a stacked card */
+    .dt-booking-table .dt-table-row {
+        display: block !important;
+        padding: 0 !important;
+        border-bottom: 1px solid var(--line);
+        border-radius: 0;
+    }
+
+    /* Tour block: full-width header strip */
+    .dt-booking-table .dt-table-row .dt-table-tour {
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--ink-3);
+    }
+    .dt-booking-table .dt-table-row .dt-table-thumb {
+        width: 44px; height: 44px;
+    }
+
+    /* Each data span: label left, value right */
+    .dt-booking-table .dt-table-row > span {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 16px;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        flex-direction: row !important;
+        gap: 8px;
+    }
+    .dt-booking-table .dt-table-row > span::before {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--fg-4);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .dt-booking-table .dt-table-row > span:nth-child(2)::before { content: "Driver"; }
+    .dt-booking-table .dt-table-row > span:nth-child(3)::before { content: "Date & time"; }
+    .dt-booking-table .dt-table-row > span:nth-child(4)::before { content: "People"; }
+    .dt-booking-table .dt-table-row > span:nth-child(5)::before { content: "Price"; }
+    .dt-booking-table .dt-table-row > span:nth-child(6)::before { content: "Status"; }
+
+    /* Actions: stacked full-width buttons */
+    .dt-booking-table .dt-table-row > span:last-child {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px;
+        padding: 12px 16px 16px;
+        border-bottom: none;
+    }
+    .dt-booking-table .dt-table-row > span:last-child::before { display: none; }
+    .dt-booking-table .dt-table-row > span:last-child .btn,
+    .dt-booking-table .dt-table-row > span:last-child .dt-table-cancel {
+        justify-content: center !important;
+        text-align: center;
+        width: 100% !important;
+        font-size: 13px !important;
+        padding: 10px 0 !important;
+    }
+
+    /* Round the first and last card in the list */
+    .dt-booking-table .dt-table-row:first-of-type { border-radius: 24px 24px 0 0; overflow: hidden; }
+    .dt-booking-table .dt-table-row:last-child { border-bottom: none; border-radius: 0 0 24px 24px; overflow: hidden; }
+
+    /* Stats row: single column */
+    .dt-stats-row { padding-left: 16px !important; padding-right: 16px !important; }
+
+    /* Empty state: fix 80px side margin */
+    .dt-page-pad > div[style*="margin:0 80px"] {
+        margin: 0 16px !important;
+    }
+}
+</style>
+}
+
+@section scripts {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function cancelBooking(bookingId, bookingDateTime) {
+    var currentDate = new Date();
+    var bookingDate = new Date(bookingDateTime);
+    var timeDiff = (bookingDate - currentDate) / (1000 * 3600);
+    if (timeDiff < 24) {
+        Swal.fire({ icon: 'warning', title: 'Cannot Cancel', text: 'Bookings within 24 hours cannot be cancelled.', confirmButtonColor: '#F87171', background: '#0F1612', color: '#EAF0EC' });
+    } else {
+        Swal.fire({
+            title: 'Cancel booking?', text: 'This action cannot be undone.',
+            icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#F87171', cancelButtonColor: '#141C18',
+            confirmButtonText: 'Yes, cancel', background: '#0F1612', color: '#EAF0EC'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("CanceledBooking","BookingTours")/' + bookingId;
+                var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (token) {
+                    var inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.name = '__RequestVerificationToken';
+                    inp.value = token.value;
+                    form.appendChild(inp);
+                }
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+}
+</script>
+}

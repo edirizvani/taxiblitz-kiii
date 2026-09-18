@@ -1,0 +1,110 @@
+@model IEnumerable<BookingTour>
+
+@{
+    ViewBag.Title = "All Bookings";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">All <em class="serif-it">bookings</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("+ New booking", "Create", null, new { @class = "btn btn-primary" })
+        </div>
+    </div>
+
+    <div class="dt-admin-table-section">
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Driver</th><th>Tour</th><th>Customer</th><th>Email</th><th>Phone</th><th>People</th><th>Date</th><th>Status</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any()) {
+                    <tr><td colspan="9" style="text-align:center;color:var(--fg-3);">No bookings yet.</td></tr>
+                }
+                @foreach (var item in Model) {
+                    string bc = item.Status == "Approved" ? "dt-badge-ok" : item.Status == "Pending" ? "dt-badge-warn" : "dt-badge-bad";
+                    <tr>
+                        <td data-label="Driver">@(item.Driver?.Name ?? "-")</td>
+                        <td data-label="Tour">@(item.Tour?.Title ?? "-")</td>
+                        <td data-label="Customer"><strong style="color:var(--fg);">@item.NameOfBookMaker</strong></td>
+                        <td data-label="Email">@item.CustomerEmail</td>
+                        <td data-label="Phone">@item.PhoneNumber</td>
+                        <td data-label="People">@item.NumberOfPeople</td>
+                        <td data-label="Date">@item.BookingDateTime.ToString("MMM d, yyyy HH:mm")</td>
+                        <td data-label="Status"><span class="dt-status @bc">@item.Status</span></td>
+                        <td class="dt-admin-td-actions">
+                            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;" })
+                            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;border-color:rgba(248,113,113,0.3);color:#F87171;" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Head {
+<style>
+    @@media (max-width: 640px) {
+        /* Hide table header row */
+        .dt-admin-table thead { display: none; }
+
+        /* Each row becomes a card */
+        .dt-admin-table,
+        .dt-admin-table tbody,
+        .dt-admin-table tr { display: block; }
+
+        .dt-admin-table tr {
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: var(--ink-2);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        /* Each cell: label left, value right */
+        .dt-admin-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 16px;
+            font-size: 13px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            border-bottom: none !important;
+            background: transparent !important;
+        }
+        .dt-admin-table td:first-child { border-top: none; }
+        .dt-admin-table td::before {
+            content: attr(data-label);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fg-4);
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+
+        /* Actions cell: side-by-side buttons, no label */
+        .dt-admin-table td.dt-admin-td-actions {
+            display: flex;
+            gap: 8px;
+            padding: 10px 16px 14px;
+            justify-content: flex-end;
+        }
+        .dt-admin-table td.dt-admin-td-actions::before { display: none; }
+        .dt-admin-table td.dt-admin-td-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* Table section: no extra side overflow clip */
+        .dt-admin-table-section { overflow-x: visible !important; }
+    }
+</style>
+}

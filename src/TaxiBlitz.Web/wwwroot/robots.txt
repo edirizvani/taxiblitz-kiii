@@ -1,0 +1,23 @@
+User-agent: *
+Disallow: /Account/
+Disallow: /Manage/
+Disallow: /BookingTours/
+Disallow: /Favourites/
+Disallow: /Referral/
+Disallow: /Reviews/Create
+Disallow: /Reviews/Edit
+Disallow: /Reviews/Delete
+Disallow: /Drivers/Create
+Disallow: /Drivers/Edit
+Disallow: /Drivers/Delete
+Disallow: /Tours/Create
+Disallow: /Tours/Edit
+Disallow: /Tours/Delete
+Allow: /Tours/
+Allow: /Tours/Details/
+Allow: /TourStories/
+Allow: /Drivers/
+Allow: /Manage/Gallery
+Allow: /
+
+Sitemap: https://taxiblitzohrid.com/sitemap.xml

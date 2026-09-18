@@ -1,0 +1,92 @@
+﻿@{
+    ViewBag.Title = "Gallery";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Visual archive</span>
+            <h1 style="font-size:72px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">
+                <em class="serif-it">Gallery</em>
+            </h1>
+            <p class="dt-page-head-sub">A living visual wall of tours and local moments.</p>
+        </div>
+        @if (User.IsInRole("Administrator")) {
+            <div class="dt-page-head-right">
+                <a href="@Url.Action("Uploadimage","Manage")" class="btn btn-primary">Upload images</a>
+            </div>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null) {
+        <div style="margin:0 80px 24px;padding:14px 18px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:12px;color:#4ADE80;font-size:14px;">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null) {
+        <div style="margin:0 80px 24px;padding:14px 18px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:12px;color:#F87171;font-size:14px;">@TempData["ErrorMessage"]</div>
+    }
+
+    <!-- Admin quick upload -->
+    @if (User.IsInRole("Administrator")) {
+        <div style="margin:0 80px 32px;background:var(--ink-2);border:1px solid var(--line);border-radius:20px;padding:24px;">
+            <h3 style="font-size:16px;font-weight:500;margin:0 0 16px;color:var(--fg);">Quick upload</h3>
+            @using (Html.BeginForm("UploadImage","Manage", FormMethod.Post, new { enctype = "multipart/form-data", style = "display:flex;gap:12px;align-items:flex-end;" })) {
+                @Html.AntiForgeryToken()
+                <div class="dt-field" style="flex:1;margin:0;">
+                    <label for="imageFile">Image file</label>
+                    <input type="file" id="imageFile" name="imageFile" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="white-space:nowrap;flex-shrink:0;">Upload</button>
+            }
+        </div>
+    }
+
+    <!-- Masonry gallery grid -->
+    <div class="dt-gallery-masonry">
+        @{ int idx = 0; }
+        @foreach (var fileName in Model) {
+            var imageUrl = Url.Content("~/gallery/" + fileName);
+            string spanClass = idx == 0 ? "dt-gallery-span-2" : "";
+            <div class="dt-gallery-tile @spanClass" onclick="openLightbox('@imageUrl')" style="cursor:pointer;">
+                <img src="@imageUrl" alt="Gallery" loading="lazy">
+                <div class="dt-gallery-overlay">
+                    <span>View full size</span>
+                    @if (User.IsInRole("Administrator")) {
+                        <form action="@Url.Action("DeleteImage","Manage")" method="post" style="margin:0;" onclick="event.stopPropagation()">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="fileName" value="@fileName" />
+                            <button type="submit" class="dt-gallery-delete"
+                                    onclick="return confirm('Delete this image?');">Delete</button>
+                        </form>
+                    }
+                </div>
+            </div>
+            idx++;
+        }
+    </div>
+
+    <div class="dt-gallery-loadmore">
+        <a href="@Url.Action("Index","Home")" class="btn btn-ghost">Back to home</a>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(5,8,7,0.92);backdrop-filter:blur(16px);z-index:300;align-items:center;justify-content:center;padding:24px;"
+     onclick="closeLightbox()">
+    <button style="position:absolute;top:20px;right:20px;background:rgba(20,28,24,0.8);border:1px solid rgba(255,255,255,0.12);color:#EAF0EC;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;"
+            onclick="closeLightbox()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <img id="lightbox-image" src="" alt="" style="max-width:min(92vw,1200px);max-height:90vh;border-radius:12px;object-fit:contain;"
+         onclick="event.stopPropagation()">
+</div>
+
+<script>
+function openLightbox(src) {
+    document.getElementById('lightbox-image').src = src;
+    document.getElementById('lightbox').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+</script>

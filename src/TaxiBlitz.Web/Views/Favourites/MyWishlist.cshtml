@@ -1,0 +1,73 @@
+@using TaxiBlitz.Domain.Entities
+@model IEnumerable<FavouriteTour>
+@{
+    ViewBag.Title = "My Wishlist";
+    var tours = Model.ToList();
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Account</span>
+            <h1 style="font-size:64px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">My <em class="serif-it">wishlist</em></h1>
+            <p class="dt-page-head-sub">@tours.Count saved @(tours.Count == 1 ? "tour" : "tours")</p>
+        </div>
+        <div class="dt-page-head-right">
+            <a href="@Url.Action("Index","Tours")" class="btn btn-ghost">Browse all tours</a>
+        </div>
+    </div>
+
+    @if (!tours.Any()) {
+        <div style="text-align:center;padding:80px 24px;background:var(--ink-2);margin:0 80px;border-radius:24px;border:1px solid var(--line);">
+            <p style="font-size:18px;color:var(--fg-2);margin:0 0 24px;">No saved tours yet — heart a tour to add it here.</p>
+            <a href="@Url.Action("Index","Tours")" class="btn btn-primary">Explore tours</a>
+        </div>
+    } else {
+        <div class="dt-tours-grid-3">
+            @foreach (var fav in tours) {
+                var item = fav.Tour;
+                if (item == null) continue;
+                <div class="dt-tour">
+                    <a class="dt-tour-cover-link" href="@Url.Action("Details","Tours",new{id=item.Id})" tabindex="-1" aria-hidden="true"></a>
+                    <div class="dt-tour-photo">
+                        <img src="@(string.IsNullOrWhiteSpace(item.PhotoProfileUrl) ? Url.Content("~/img/background.jpg") : item.PhotoProfileUrl)"
+                             alt="@item.Title" loading="lazy">
+                        <div class="dt-tour-top">
+                            <button class="fav-btn fav-active"
+                                    onclick="tbToggleFavourite(@item.Id, this)"
+                                    title="Remove from wishlist"
+                                    style="background:rgba(14,20,16,0.7);border:1px solid rgba(255,255,255,0.12);border-radius:50%;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#F87171;">
+                                <svg class="fav-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+                            </button>
+                            <a href="@Url.Action("Details","Tours", new { id = item.Id })" class="dt-tour-arrow" style="margin-left:auto;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                            </a>
+                        </div>
+                        <div class="dt-tour-bottom">
+                            <span class="dt-tour-chip">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                                @item.Duration
+                            </span>
+                            <span class="dt-tour-chip">From €@item.Price</span>
+                        </div>
+                    </div>
+                    <div class="dt-tour-meta">
+                        <span class="dt-tour-place">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                            @item.StartingPoint
+                        </span>
+                        <h3 class="dt-tour-title">@item.Title</h3>
+                        <p class="dt-tour-desc">@(item.Description != null && item.Description.Length > 110 ? item.Description.Substring(0,110) + "…" : item.Description)</p>
+                        <div class="dt-tour-foot">
+                            <div class="dt-tour-from">From <strong>€@item.Price</strong></div>
+                            <a href="@Url.Action("Create","BookingTours", new { tourId = item.Id })" class="dt-tour-book">
+                                Book
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

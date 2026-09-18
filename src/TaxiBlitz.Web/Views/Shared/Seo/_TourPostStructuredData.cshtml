@@ -1,0 +1,66 @@
+@model TourPost
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@{
+    var siteUrl  = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var logoUrl  = siteUrl + "/img/app_logo_transparent.png";
+    var pageUrl  = $"{siteUrl}{Context.Request.Path}{Context.Request.QueryString}";
+    var modified = Model.UpdatedDate.HasValue ? Model.UpdatedDate.Value : Model.CreatedDate;
+
+    var schema = new JObject
+    {
+        ["@context"]     = "https://schema.org",
+        ["@type"]        = "BlogPosting",
+        ["headline"]     = Model.Title,
+        ["description"]  = Model.Excerpt,
+        ["datePublished"] = Model.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+        ["dateModified"]  = modified.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+        ["author"] = new JObject
+        {
+            ["@type"] = "Person",
+            ["name"]  = Model.Author?.UserName ?? "Taxi Blitz Ohrid"
+        },
+        ["publisher"] = new JObject
+        {
+            ["@type"] = "Organization",
+            ["name"]  = "Taxi Blitz Ohrid",
+            ["logo"]  = new JObject
+            {
+                ["@type"] = "ImageObject",
+                ["url"]   = logoUrl
+            }
+        }
+    };
+
+    if (!string.IsNullOrEmpty(Model.CoverImage))
+        schema["image"] = Model.CoverImage;
+}
+
+<!-- OpenGraph Tags -->
+<meta property="og:title" content="@Model.Title" />
+<meta property="og:description" content="@Model.Excerpt" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="@pageUrl" />
+@if (!string.IsNullOrEmpty(Model.CoverImage))
+{
+    <meta property="og:image" content="@Model.CoverImage" />
+}
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="@Model.Title" />
+<meta name="twitter:description" content="@Model.Excerpt" />
+@if (!string.IsNullOrEmpty(Model.CoverImage))
+{
+    <meta name="twitter:image" content="@Model.CoverImage" />
+}
+
+<!-- Meta Tags -->
+<meta name="description" content="@Model.Excerpt" />
+<meta name="keywords" content="@(string.IsNullOrEmpty(Model.Tags) ? "travel, tour, story" : Model.Tags)" />
+
+<!-- Canonical URL -->
+<link rel="canonical" href="@pageUrl" />
+
+<!-- Schema.org BlogPosting Markup -->
+<script type="application/ld+json">@Html.Raw(JsonConvert.SerializeObject(schema, Formatting.None))</script>

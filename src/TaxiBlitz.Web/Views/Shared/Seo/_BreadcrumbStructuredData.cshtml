@@ -1,0 +1,41 @@
+﻿@using System
+@using System.Collections.Generic
+@using System.Linq
+@using Newtonsoft.Json
+@{
+    var breadcrumbs = ViewBag.BreadcrumbItems as IEnumerable<BreadcrumbItem>;
+    if (breadcrumbs == null)
+    {
+        var controller = (ViewContext.RouteData.Values["controller"] ?? "Home").ToString();
+        var action = (ViewContext.RouteData.Values["action"] ?? "Index").ToString();
+        var currentTitle = ViewBag.Title as string;
+        var inferred = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem { Name = "Home", Url = Url.Action("Index", "Home", null, Context.Request.Scheme), IsCurrentPage = false }
+        };
+
+        if (!string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase) || !string.Equals(action, "Index", StringComparison.OrdinalIgnoreCase))
+        {
+            inferred.Add(new BreadcrumbItem
+            {
+                Name = controller,
+                Url = Url.Action(action, controller, null, Context.Request.Scheme),
+                IsCurrentPage = false
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(currentTitle))
+        {
+            inferred.Add(new BreadcrumbItem { Name = currentTitle, Url = null, IsCurrentPage = true });
+        }
+
+        breadcrumbs = inferred;
+    }
+
+    var schema = StructuredDataBuilder.BuildBreadcrumbSchema(breadcrumbs);
+}
+
+@if (schema != null)
+{
+    <script type="application/ld+json">@Html.Raw(JsonConvert.SerializeObject(schema, Formatting.None))</script>
+}

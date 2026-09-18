@@ -1,0 +1,7 @@
+@model IEnumerable<BookingTour>
+
+@{
+    ViewBag.Title = "Admin Dashboard";
+    Context.Response.Redirect(Url.Action("AdministratorIndex", "BookingTours"));
+}
+

@@ -1,0 +1,156 @@
+@model IEnumerable<Tour>
+@{
+    ViewBag.Title = "Tours";
+    int totalCount  = ViewBag.TotalCount  != null ? (int)ViewBag.TotalCount  : Model.Count();
+    int totalPages  = ViewBag.TotalPages  != null ? (int)ViewBag.TotalPages  : 1;
+    int currentPage = ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1;
+    string query    = ViewBag.Query  as string ?? "";
+    string sortBy   = ViewBag.SortBy as string ?? "";
+}
+
+@Html.AntiForgeryToken()
+<div class="dt-page-pad">
+    <!-- Page header -->
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">@totalCount @(totalCount == 1 ? "tour" : "tours") available</span>
+            <h1 style="font-size:72px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">
+                Our <em class="serif-it">tours</em>
+            </h1>
+            <p class="dt-page-head-sub">Curated routes through Lake Ohrid, ancient monasteries, and mountain landscapes.</p>
+        </div>
+        @if (User.IsInRole("Administrator")) {
+            <div class="dt-page-head-right">
+                @Html.ActionLink("+ Create tour", "Create", null, new { @class = "btn btn-primary" })
+            </div>
+        }
+    </div>
+
+    <!-- Search + Sort bar -->
+    <div style="margin:0 80px 40px;">
+        @using (Html.BeginForm("Index", "Tours", FormMethod.Get, new { style = "display:flex;gap:12px;flex-wrap:wrap;align-items:center;" })) {
+            <div style="flex:1;min-width:220px;position:relative;">
+                <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--fg-4);pointer-events:none;"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                  <input type="text" name="q" value="@query" placeholder="Search tours…"
+                       style="width:100%;background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:11px 14px 11px 40px;font-size:14px;color:var(--fg);outline:none;box-sizing:border-box;" />
+            </div>
+            <select name="sortBy" onchange="this.form.submit()"
+                    style="background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:11px 16px;font-size:14px;color:var(--fg);cursor:pointer;min-width:180px;">
+                <option value=""           selected="@(sortBy == ""           ? "selected" : null)">Sort: Default</option>
+                <option value="price-asc"  selected="@(sortBy == "price-asc"  ? "selected" : null)">Price: Low to High</option>
+                <option value="price-desc" selected="@(sortBy == "price-desc" ? "selected" : null)">Price: High to Low</option>
+                <option value="title"      selected="@(sortBy == "title"      ? "selected" : null)">Name: A - Z</option>
+            </select>
+            <button type="submit" class="btn btn-primary" style="padding:11px 22px;font-size:14px;">Search</button>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(query)) {
+            <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <span style="font-size:13px;color:var(--fg-3);">Showing results for</span>
+                <span class="pill" style="background:rgba(103,232,249,0.1);border-color:rgba(103,232,249,0.25);color:var(--lime);font-size:13px;">
+                    "@query"
+                    <a href="@Url.Action("Index","Tours", new { sortBy = sortBy })"
+                              style="margin-left:6px;color:var(--fg-3);text-decoration:none;font-weight:700;" title="Clear search">×</a>
+                </span>
+                <span style="font-size:13px;color:var(--fg-4);">@totalCount @(totalCount == 1 ? "result" : "results")</span>
+            </div>
+        }
+    </div>
+
+    <!-- Tour grid -->
+    @if (Model.Any()) {
+        <div class="dt-tours-grid-3">
+            @foreach (var item in Model) {
+                <div class="dt-tour">
+                    <a class="dt-tour-cover-link" href="@(string.IsNullOrWhiteSpace(item.Slug) ? Url.Action("Details","Tours",new{id=item.Id}) : Url.Action("DetailsBySlug","Tours",new{slug=item.Slug}))" tabindex="-1" aria-hidden="true"></a>
+                    <div class="dt-tour-photo">
+                        <img src="@(string.IsNullOrWhiteSpace(item.PhotoProfileUrl) ? Url.Content("~/img/background.jpg") : item.PhotoProfileUrl)"
+                             alt="@item.Title" loading="lazy">
+                        <div class="dt-tour-top">
+                            @if (User.Identity.IsAuthenticated) {
+                                bool isFav = (ViewBag.FavouriteIds as IEnumerable<int> ?? Enumerable.Empty<int>()).Contains(item.Id);
+                                <button class="fav-btn @(isFav ? "fav-active" : "")"
+                                        onclick="tbToggleFavourite(@item.Id, this)"
+                                        title="@(isFav ? "Remove from wishlist" : "Add to wishlist")"
+                                        style="background:rgba(14,20,16,0.7);border:1px solid rgba(255,255,255,0.12);border-radius:50%;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:@(isFav ? "#F87171" : "var(--fg-3)");">
+                                    <svg class="fav-icon" width="15" height="15" viewBox="0 0 24 24" fill="@(isFav ? "currentColor" : "none")" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+                                </button>
+                            }
+                            <a href="@(string.IsNullOrWhiteSpace(item.Slug) ? Url.Action("Details","Tours",new{id=item.Id}) : Url.Action("DetailsBySlug","Tours",new{slug=item.Slug}))" class="dt-tour-arrow" style="margin-left:auto;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                            </a>
+                        </div>
+                        <div class="dt-tour-bottom">
+                            <span class="dt-tour-chip">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                                @item.Duration
+                            </span>
+                            <span class="dt-tour-chip">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7a7 7 0 1 0 0 10M4 10h9M4 14h9"/></svg>
+                                From €@item.Price
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dt-tour-meta">
+                        <span class="dt-tour-place">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                            @item.StartingPoint
+                        </span>
+                        <h3 class="dt-tour-title">@item.Title</h3>
+                        <p class="dt-tour-desc">@(item.Description != null && item.Description.Length > 110 ? item.Description.Substring(0, 110) + "…" : item.Description)</p>
+                        <div class="dt-tour-foot">
+                            <div class="dt-tour-from">From <strong>€@item.Price</strong></div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                @if (User.IsInRole("Administrator")) {
+                                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:7px 12px;" })
+                                    <form method="post" action="@Url.Action("Delete","Tours",new{id=item.Id})" style="display:inline;" onsubmit="return confirm('Delete this tour?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-ghost" style="font-size:12px;padding:7px 12px;border-color:rgba(248,113,113,0.3);color:#F87171;">Delete</button>
+                                    </form>
+                                }
+                                <a href="@Url.Action("Create","BookingTours", new { tourId = item.Id })" class="dt-tour-book">
+                                    Book
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    } else {
+        <div style="text-align:center;padding:80px 24px;margin:0 80px;background:var(--ink-2);border:1px solid var(--line);border-radius:24px;">
+            <p style="font-size:18px;color:var(--fg-2);margin:0 0 20px;">No tours found@(!string.IsNullOrWhiteSpace(query) ? " for \"" + query + "\"" : "").</p>
+            @if (!string.IsNullOrWhiteSpace(query)) {
+                <a href="@Url.Action("Index","Tours")" class="btn btn-ghost">Clear search</a>
+            }
+        </div>
+    }
+
+    <!-- Pagination -->
+    @if (totalPages > 1) {
+        <div class="dt-pagination">
+            @if (currentPage > 1) {
+                <a href="@Url.Action("Index", new { q = query, sortBy = sortBy, page = currentPage - 1 })">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                </a>
+            }
+            @for (int i = 1; i <= totalPages; i++) {
+                if (i == currentPage) {
+                    <span class="active">@i</span>
+                } else {
+                    <a href="@Url.Action("Index", new { q = query, sortBy = sortBy, page = i })">@i</a>
+                }
+            }
+            @if (currentPage < totalPages) {
+                <a href="@Url.Action("Index", new { q = query, sortBy = sortBy, page = currentPage + 1 })">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            }
+        </div>
+    }
+</div>
+

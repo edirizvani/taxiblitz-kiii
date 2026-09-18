@@ -1,0 +1,83 @@
+@model BookingTour
+
+@{
+    ViewBag.Title = "Edit Booking";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Edit <em class="serif-it">booking</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("Back to dashboard", "AdministratorIndex", null, new { @class = "btn btn-ghost" })
+        </div>
+    </div>
+
+    <div style="margin:0 80px 64px;max-width:560px;">
+        <div class="dt-form-card">
+            @using (Html.BeginForm()) {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "validation-summary-errors" })
+                @Html.HiddenFor(m => m.Id)
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.NameOfBookMaker)
+                    @Html.EditorFor(m => m.NameOfBookMaker)
+                    @Html.ValidationMessageFor(m => m.NameOfBookMaker, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.TourId, "Tour")
+                    @Html.DropDownList("TourId", null, new { @class = "dt-select" })
+                    @Html.ValidationMessageFor(m => m.TourId, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.DriverId, "Driver")
+                    @Html.DropDownList("DriverId", null, new { @class = "dt-select" })
+                    @Html.ValidationMessageFor(m => m.DriverId, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div class="dt-field" style="margin:0;">
+                        @Html.LabelFor(m => m.CustomerEmail)
+                        @Html.EditorFor(m => m.CustomerEmail)
+                        @Html.ValidationMessageFor(m => m.CustomerEmail, "", new { @class = "field-validation-error" })
+                    </div>
+                    <div class="dt-field" style="margin:0;">
+                        @Html.LabelFor(m => m.PhoneNumber)
+                        @Html.EditorFor(m => m.PhoneNumber)
+                        @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "field-validation-error" })
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+                    <div class="dt-field" style="margin:0;">
+                        @Html.LabelFor(m => m.NumberOfPeople)
+                        @Html.EditorFor(m => m.NumberOfPeople)
+                        @Html.ValidationMessageFor(m => m.NumberOfPeople, "", new { @class = "field-validation-error" })
+                    </div>
+                    <div class="dt-field" style="margin:0;">
+                        @Html.LabelFor(m => m.Status)
+                        @Html.EditorFor(m => m.Status)
+                        @Html.ValidationMessageFor(m => m.Status, "", new { @class = "field-validation-error" })
+                    </div>
+                </div>
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.BookingDateTime)
+                    @Html.EditorFor(m => m.BookingDateTime)
+                    @Html.ValidationMessageFor(m => m.BookingDateTime, "", new { @class = "field-validation-error" })
+                </div>
+
+                <button type="submit" class="dt-auth-submit" style="margin-top:8px;">
+                    Save changes
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+

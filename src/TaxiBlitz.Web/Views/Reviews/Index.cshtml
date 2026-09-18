@@ -1,0 +1,51 @@
+@model IEnumerable<Review>
+
+@{
+    ViewBag.Title = "Reviews";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Customer <em class="serif-it">reviews</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("+ Add review", "Create", null, new { @class = "btn btn-primary" })
+        </div>
+    </div>
+
+    <div class="dt-admin-table-section">
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Reviewer</th><th>Review</th><th>Date</th><th>Photo</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any()) {
+                    <tr><td colspan="5" style="text-align:center;color:var(--fg-3);">No reviews yet.</td></tr>
+                }
+                @foreach (var item in Model) {
+                    <tr>
+                        <td><strong style="color:var(--fg);">@item.ReviewerName</strong></td>
+                        <td style="max-width:320px;">@(item.Text != null && item.Text.Length > 120 ? item.Text.Substring(0,120) + "…" : item.Text)</td>
+                        <td>@item.ReviewDate.ToString("MMM d, yyyy")</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.ImageUrl)) {
+                                <img src="@item.ImageUrl" alt="@item.ReviewerName" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" />
+                            } else {
+                                <span style="color:var(--fg-4);">—</span>
+                            }
+                        </td>
+                        <td style="display:flex;gap:6px;">
+                            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;" })
+                            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;border-color:rgba(248,113,113,0.3);color:#F87171;" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

@@ -1,0 +1,298 @@
+﻿@model TourPost
+
+@{
+    ViewBag.Title = (Model.Id == 0 ? "Create" : "Edit") + " Tour Story";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">@(Model.Id == 0 ? "New" : "Edit") <em class="serif-it">story</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("Back to stories", "Management", "TourStories", null, new { @class = "btn btn-ghost" })
+        </div>
+    </div>
+
+    <div style="margin:0 80px 64px;max-width:800px;">
+        <div class="dt-form-card">
+            @using (Html.BeginForm(Model.Id == 0 ? "Create" : "Edit", "TourStories", FormMethod.Post, new { enctype = "multipart/form-data" })) {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(false, "")
+                @Html.HiddenFor(m => m.Id)
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div class="dt-field" style="grid-column:1/-1;">
+                        @Html.LabelFor(m => m.Title)
+                        @Html.TextBoxFor(m => m.Title, new { placeholder = "Story title", maxlength = "200" })
+                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "field-validation-error" })
+                    </div>
+                    <div class="dt-field" style="margin:0;">
+                        @Html.LabelFor(m => m.TourDestination)
+                        @Html.TextBoxFor(m => m.TourDestination, new { placeholder = "e.g. Ohrid, Struga", maxlength = "100" })
+                    </div>
+                    <div class="dt-field" style="margin:0;">
+                        @Html.LabelFor(m => m.TourDate)
+                        @Html.TextBoxFor(m => m.TourDate, "{0:yyyy-MM-dd}", new { type = "date", style = "color-scheme:dark;" })
+                    </div>
+                </div>
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Excerpt)
+                    @Html.TextAreaFor(m => m.Excerpt, new { placeholder = "Brief summary (max 1000 chars)", maxlength = "1000", rows = "3", id = "excerptField" })
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                        @Html.ValidationMessageFor(m => m.Excerpt, "", new { @class = "field-validation-error" })
+                        <span style="font-size:11px;color:var(--fg-4);font-family:var(--mono);margin-left:auto;"><span id="excerptCount">@(Model.Excerpt != null ? Model.Excerpt.Length : 0)</span> / 1000</span>
+                    </div>
+                </div>
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Content)
+                    @Html.TextAreaFor(m => m.Content, new { placeholder = "Full story content (HTML supported)", rows = "10", id = "storyContent" })
+                    @Html.ValidationMessageFor(m => m.Content, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div class="dt-field" style="margin:0;">
+                        @Html.LabelFor(m => m.CoverImage)
+                        @Html.TextBoxFor(m => m.CoverImage, new { placeholder = "Cover image URL", id = "CoverImage" })
+                        <button type="button" class="btn btn-ghost" style="font-size:12px;padding:6px 12px;margin-top:6px;" onclick="triggerCoverUpload()">Upload file</button>
+                        <input type="file" id="coverFileInput" accept="image/*" style="display:none;" onchange="handleCoverUpload(this)" />
+                        <div id="cover-preview" style="display:none;margin-top:8px;width:120px;height:80px;border-radius:8px;overflow:hidden;">
+                            <img id="cover-preview-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;" />
+                        </div>
+                    </div>
+                    <div class="dt-field" style="margin:0;">
+                        @Html.LabelFor(m => m.Tags)
+                        @Html.TextBoxFor(m => m.Tags, new { placeholder = "adventure, beaches, nature" })
+                    </div>
+                </div>
+
+                <div class="dt-field">
+                    <label for="RelatedTourId">Related tour (optional)</label>
+                    @Html.DropDownListFor(m => m.RelatedTourId, (SelectList)ViewBag.Tours, "— None —", new { @class = "dt-select" })
+                </div>
+
+                <!-- Gallery images -->
+                <div style="margin-top:8px;padding:24px;background:var(--ink-3);border:1px solid var(--line);border-radius:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h4 style="font-size:13px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.1em;color:var(--fg-3);margin:0;">Gallery images</h4>
+                        <button type="button" class="btn btn-ghost" style="font-size:12px;padding:6px 14px;" onclick="addImageSlot()">+ Add image</button>
+                    </div>
+                    <div id="gallery-builder" style="display:flex;flex-direction:column;gap:12px;">
+                        @if (Model.Images != null && Model.Images.Any()) {
+                            int imgIdx = 0;
+                            foreach (var img in Model.Images.OrderBy(i => i.DisplayOrder)) {
+                                <div class="dt-img-slot" data-idx="@imgIdx">
+                                    <div class="dt-img-slot-preview" @(!string.IsNullOrEmpty(img.ImageUrl) ? "" : "style=\"display:none;\"")>
+                                        @if (!string.IsNullOrEmpty(img.ImageUrl)) {
+                                            <img src="@img.ImageUrl" alt="" />
+                                        }
+                                    </div>
+                                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                                        <input type="hidden" name="imageUrls[@imgIdx]" value="@img.ImageUrl" />
+                                        <input type="text" name="imageCaptions[@imgIdx]" value="@img.Caption" placeholder="Caption (optional)" maxlength="200"
+                                               style="background:var(--ink-4);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;color:var(--fg);font-size:13px;width:100%;box-sizing:border-box;" />
+                                        <button type="button" class="btn btn-ghost" style="font-size:11px;padding:5px 10px;align-self:flex-start;" onclick="triggerUpload(this)">Replace image</button>
+                                        <input type="file" accept="image/*" style="display:none;" onchange="handleUpload(this)" />
+                                    </div>
+                                    <button type="button" onclick="removeSlot(this)"
+                                            style="background:transparent;border:none;color:var(--fg-3);cursor:pointer;font-size:20px;line-height:1;padding:4px 8px;flex-shrink:0;" title="Remove">×</button>
+                                </div>
+                                imgIdx++;
+                            }
+                        }
+                    </div>
+                    <p style="font-size:12px;color:var(--fg-4);margin:12px 0 0;font-family:var(--mono);">JPG, PNG, WebP — max 5 MB each.</p>
+                </div>
+
+                <!-- Publish settings -->
+                <div style="margin-top:20px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--fg-2);">
+                        <input type="checkbox" id="IsPublished" name="IsPublished" value="true" @(Model.IsPublished ? "checked" : "")
+                               style="width:16px;height:16px;accent-color:var(--lime);" />
+                        Publish story
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--fg-2);">
+                        <input type="checkbox" id="IsFeatured" name="IsFeatured" value="true" @(Model.IsFeatured ? "checked" : "")
+                               style="width:16px;height:16px;accent-color:var(--lime);" />
+                        Feature on homepage
+                    </label>
+                </div>
+
+                <button type="submit" class="dt-auth-submit" style="margin-top:24px;">
+                    @(Model.Id == 0 ? "Create story" : "Save changes")
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@section Head {
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
+}
+
+@section Scripts {
+    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validate-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+    tinymce.init({
+        selector: '#storyContent',
+        height: 400,
+        skin: 'oxide-dark',
+        content_css: 'dark',
+        menubar: false,
+        plugins: 'link image lists paste code',
+        toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code',
+        setup: function(editor) {
+            editor.on('change input', function() { editor.save(); });
+        },
+        images_upload_handler: function (blobInfo, success, failure) {
+            var fd = new FormData();
+            fd.append('file', blobInfo.blob(), blobInfo.filename());
+            fetch('@Url.Action("UploadImage", "TourStories")', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value },
+                body: fd
+            }).then(r => r.json()).then(j => { if (j && j.success) success(j.url); else failure(j.error || 'Upload failed'); })
+              .catch(() => failure('Upload error'));
+        }
+    });
+
+    // -- Gallery image slots --------------------------------------
+    let slotIdx = document.querySelectorAll('#gallery-builder .dt-img-slot').length;
+
+    function addImageSlot(url, caption) {
+        url = url || '';
+        caption = caption || '';
+        var idx = slotIdx++;
+        var slot = document.createElement('div');
+        slot.className = 'dt-img-slot';
+        slot.dataset.idx = idx;
+        slot.innerHTML =
+            '<div class="dt-img-slot-preview"' + (url ? '' : ' style="display:none;"') + '>' +
+                (url ? '<img src="' + url + '" alt="" />' : '') +
+            '</div>' +
+            '<div style="flex:1;display:flex;flex-direction:column;gap:6px;">' +
+                '<input type="hidden" name="imageUrls[' + idx + ']" value="' + url + '" />' +
+                '<input type="text" name="imageCaptions[' + idx + ']" value="' + caption + '" placeholder="Caption (optional)" maxlength="200"' +
+                '       style="background:var(--ink-4);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;color:var(--fg);font-size:13px;width:100%;box-sizing:border-box;" />' +
+                '<button type="button" class="btn btn-ghost" style="font-size:11px;padding:5px 10px;align-self:flex-start;" onclick="triggerUpload(this)">Upload image</button>' +
+                '<input type="file" accept="image/*" style="display:none;" onchange="handleUpload(this)" />' +
+            '</div>' +
+            '<button type="button" onclick="removeSlot(this)"' +
+            '        style="background:transparent;border:none;color:var(--fg-3);cursor:pointer;font-size:20px;line-height:1;padding:4px 8px;flex-shrink:0;" title="Remove">&#215;</button>';
+        document.getElementById('gallery-builder').appendChild(slot);
+    }
+
+    function triggerUpload(btn) {
+        btn.closest('.dt-img-slot').querySelector('input[type="file"]').click();
+    }
+
+    function handleUpload(input) {
+        var slot = input.closest('.dt-img-slot');
+        var file = input.files[0];
+        if (!file) return;
+        var btn = slot.querySelector('.btn');
+        btn.textContent = 'Uploading…';
+        btn.disabled = true;
+        var fd = new FormData();
+        fd.append('file', file);
+        fetch('@Url.Action("UploadImage", "TourStories")', { method: 'POST', credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value },
+                body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(j) {
+                btn.textContent = 'Replace image';
+                btn.disabled = false;
+                if (j.success) {
+                    slot.querySelector('input[type="hidden"]').value = j.url;
+                    var preview = slot.querySelector('.dt-img-slot-preview');
+                    preview.style.display = '';
+                    preview.innerHTML = '<img src="' + j.url + '" alt="" />';
+                } else {
+                    alert(j.error || 'Upload failed');
+                }
+            })
+            .catch(function() {
+                btn.textContent = 'Replace image';
+                btn.disabled = false;
+                alert('Upload error');
+            });
+    }
+
+    function removeSlot(btn) {
+        btn.closest('.dt-img-slot').remove();
+        reindexSlots();
+    }
+
+    function reindexSlots() {
+        var slots = document.querySelectorAll('#gallery-builder .dt-img-slot');
+        slots.forEach(function(slot, i) {
+            slot.dataset.idx = i;
+            var urlInput = slot.querySelector('input[type="hidden"]');
+            if (urlInput) urlInput.name = 'imageUrls[' + i + ']';
+            var capInput = slot.querySelector('input[type="text"]');
+            if (capInput) capInput.name = 'imageCaptions[' + i + ']';
+        });
+        slotIdx = slots.length;
+    }
+
+    // -- Cover image upload ---------------------------------------
+    function triggerCoverUpload() {
+        document.getElementById('coverFileInput').click();
+    }
+
+    function handleCoverUpload(input) {
+        var file = input.files[0];
+        if (!file) return;
+        var fd = new FormData();
+        fd.append('file', file);
+        fetch('@Url.Action("UploadImage", "TourStories")', { method: 'POST', credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value },
+                body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(j) {
+                if (j.success) {
+                    document.getElementById('CoverImage').value = j.url;
+                    var preview = document.getElementById('cover-preview');
+                    preview.style.display = '';
+                    document.getElementById('cover-preview-img').src = j.url;
+                } else {
+                    alert(j.error || 'Upload failed');
+                }
+            })
+            .catch(function() { alert('Upload error'); });
+    }
+
+    // Show existing cover preview when editing
+    (function() {
+        var coverInput = document.getElementById('CoverImage');
+        if (coverInput && coverInput.value) {
+            document.getElementById('cover-preview').style.display = '';
+            document.getElementById('cover-preview-img').src = coverInput.value;
+        }
+    })();
+
+    // Sync TinyMCE content back to the textarea BEFORE jQuery Validate runs.
+    // Must use click (not submit) because jQuery Validate's submit handler fires first.
+    document.querySelector('[type="submit"]').addEventListener('click', function() {
+        if (typeof tinymce !== 'undefined') tinymce.triggerSave();
+    });
+
+    // Excerpt character counter
+    (function() {
+        var el = document.getElementById('excerptField');
+        var counter = document.getElementById('excerptCount');
+        if (el && counter) {
+            el.addEventListener('input', function() {
+                counter.textContent = this.value.length;
+            });
+        }
+    })();
+    </script>
+}
+

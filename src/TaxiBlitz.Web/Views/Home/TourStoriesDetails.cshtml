@@ -1,0 +1,213 @@
+﻿
+@model TourPost
+
+@{
+    ViewBag.Title = Model.Title + " - Tour Stories";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.MetaDescription = Model.Excerpt;
+    ViewBag.OgTitle = Model.Title;
+    ViewBag.OgDescription = Model.Excerpt;
+    ViewBag.OgImage = Model.CoverImage;
+    ViewBag.CanonicalUrl = Url.Action("Details", "TourStories", new { id = Model.Id, slug = Model.Slug }, Context.Request.Scheme);
+    ViewBag.ShareTitle = Model.Title;
+    ViewBag.ShareUrl   = ViewBag.CanonicalUrl;
+    ViewBag.ShareDesc  = Model.Excerpt;
+    ViewBag.ShareImg   = Model.CoverImage;
+}
+
+<!-- SEO Meta Tags -->
+<meta name="description" content="@Html.Encode(Model.Excerpt)" />
+<meta property="og:title" content="@Html.Encode(Model.Title)" />
+<meta property="og:description" content="@Html.Encode(Model.Excerpt)" />
+@if (!string.IsNullOrEmpty(Model.CoverImage)) { <meta property="og:image" content="@Model.CoverImage" /> }
+<link rel="canonical" href="@ViewBag.CanonicalUrl" />
+
+@if (User.IsInRole("Administrator")) {
+    <div style="background:var(--ink-2);border-bottom:1px solid var(--line);padding:10px 80px;display:flex;align-items:center;gap:12px;font-size:13px;">
+        <span style="color:var(--fg-3);font-family:var(--mono);letter-spacing:0.06em;text-transform:uppercase;font-size:11px;">Admin</span>
+        <span style="color:var(--line-2);">|</span>
+        @Html.ActionLink("← All stories", "Index", "TourStories", null, new { style = "color:var(--fg-2);text-decoration:none;" })
+        @Html.ActionLink("Edit story", "Edit", "TourStories", new { id = Model.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:5px 12px;" })
+        @using (Html.BeginForm("Delete", "TourStories", new { id = Model.Id }, FormMethod.Post, null, new { style = "display:inline;" })) {
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-ghost"
+                    style="font-size:12px;padding:5px 12px;border-color:rgba(248,113,113,0.35);color:#F87171;"
+                    onclick="return confirm('Delete this story permanently?')">Delete story</button>
+        }
+        @Html.ActionLink("+ New story", "Create", "TourStories", null, new { @class = "btn btn-primary", style = "font-size:12px;padding:5px 14px;margin-left:auto;" })
+    </div>
+}
+
+<!-- Story hero -->
+<div style="position:relative;height:560px;overflow:hidden;background:var(--ink-1);">
+    @if (!string.IsNullOrEmpty(Model.CoverImage)) {
+        <img src="@Model.CoverImage" alt="@Model.Title" loading="lazy"
+             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.45;" />
+    }
+    <div style="position:absolute;inset:0;background:linear-gradient(0deg,var(--ink-0) 0%,transparent 60%);"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:0 80px 56px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+            @if (!string.IsNullOrEmpty(Model.TourDestination)) {
+                <span class="pill" style="background:rgba(103,232,249,0.15);border-color:rgba(103,232,249,0.3);color:var(--lime);">@Model.TourDestination</span>
+            }
+            @if (Model.IsFeatured) {
+                <span class="pill" style="background:rgba(229,164,114,0.15);border-color:rgba(229,164,114,0.3);color:var(--amber);">Featured</span>
+            }
+        </div>
+        <h1 style="font-size:clamp(2rem,5vw,4rem);font-weight:500;letter-spacing:-0.035em;line-height:1;color:var(--fg);margin:0 0 20px;max-width:800px;">@Model.Title</h1>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:20px;color:var(--fg-3);font-size:14px;">
+            <span>By <strong style="color:var(--fg-2);">@(Model.Author != null ? Model.Author.UserName : "TaxiBlitz Team")</strong></span>
+            <span>@Model.CreatedDate.ToString("MMMM d, yyyy")</span>
+            @if (Model.TourDate.HasValue) { <span>Tour date: @Model.TourDate.Value.ToString("MMM d, yyyy")</span> }
+            <span>@Model.ViewCount views</span>
+        </div>
+    </div>
+</div>
+
+<!-- Article body -->
+<div class="dt-story-body">
+
+    <div class="dt-story-body-content">
+        @Html.Raw(ViewBag.SafeContent)
+    </div>
+
+    <!-- Gallery -->
+    @if (Model.Images.Any()) {
+        <div class="dt-story-gallery-section">
+            <h3 style="font-size:22px;font-weight:500;color:var(--fg);margin:0 0 24px;">Photos</h3>
+            <div class="dt-story-gallery-grid">
+                @foreach (var image in Model.Images.OrderBy(i => i.DisplayOrder)) {
+                    <div style="border-radius:16px;overflow:hidden;aspect-ratio:4/3;cursor:pointer;"
+                         onclick="openLightbox('@image.ImageUrl')">
+                        <img src="@image.ImageUrl" alt="@image.Caption" loading="lazy"
+                             style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;" />
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Social share -->
+    <div style="padding:24px 0;border-top:1px solid var(--line);margin-top:16px;">
+        @Html.Partial("_SocialShare")
+    </div>
+
+    <!-- Tags -->
+    @if (!string.IsNullOrEmpty(Model.Tags)) {
+        <div class="dt-story-tags-section">
+            @foreach (var tag in Model.Tags.Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries)) {
+                <span class="pill">@tag.Trim()</span>
+            }
+        </div>
+    }
+</div>
+
+<!-- Comments -->
+<div class="dt-story-comments">
+    <div style="height:1px;background:var(--line);margin-bottom:48px;"></div>
+    <h3 style="font-size:24px;font-weight:500;color:var(--fg);margin:0 0 32px;">
+        Comments <span style="color:var(--fg-3);font-size:18px;">(@Model.Comments.Count(c => c.IsApproved))</span>
+    </h3>
+
+    @if (User.Identity.IsAuthenticated) {
+        <form action="@Url.Action("AddComment", "TourStories")" method="post" class="dt-story-comment-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="postId" value="@Model.Id" />
+            <textarea id="commentText" name="content" placeholder="Share your thoughts…" required maxlength="1000"></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <span style="font-size:12px;color:var(--fg-4);font-family:var(--mono);"><span id="commentCount">0</span> / 1000</span>
+                <button type="submit" class="btn btn-primary">Post comment</button>
+            </div>
+        </form>
+    } else {
+        <div style="background:var(--ink-2);border:1px solid var(--line);border-radius:16px;padding:24px;text-align:center;margin-bottom:32px;color:var(--fg-3);">
+            <a href="@Url.Action("Login","Account")" style="color:var(--lime);">Sign in</a> to leave a comment
+        </div>
+    }
+
+    @if (Model.Comments.Where(c => c.IsApproved).Any()) {
+        <div class="dt-story-comment-list">
+            @foreach (var comment in Model.Comments.Where(c => c.IsApproved).OrderByDescending(c => c.CreatedDate)) {
+                var authorName = comment.CommentAuthor != null ? comment.CommentAuthor.UserName : "User";
+                <div class="dt-story-comment" style="background:var(--ink-2);border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin-bottom:16px;">
+                    <div class="dt-story-comment-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--lime-dim,#1a3d2e) 0%,var(--ink-3,#1c2822) 100%);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--lime);flex-shrink:0;">
+                                @authorName.Substring(0, 1).ToUpper()
+                            </div>
+                            <div>
+                                <strong style="color:var(--fg);font-size:14px;">@authorName</strong>
+                                <div style="font-size:12px;color:var(--fg-4);font-family:var(--mono);">@comment.CreatedDate.ToString("MMM d, yyyy · h:mm tt")</div>
+                            </div>
+                        </div>
+                        @if (User.Identity.IsAuthenticated && (comment.CommentAuthorId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value || User.IsInRole("Administrator"))) {
+                            <form action="@Url.Action("DeleteComment","TourStories")" method="post" style="margin:0;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="commentId" value="@comment.Id" />
+                                <input type="hidden" name="postId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-ghost"
+                                        style="font-size:11px;padding:4px 10px;border-color:rgba(248,113,113,0.3);color:#F87171;"
+                                        onclick="return confirm('Delete this comment?')">Delete</button>
+                            </form>
+                        }
+                    </div>
+                    <p style="color:var(--fg-2);font-size:15px;line-height:1.65;margin:0;">@comment.Content</p>
+                </div>
+            }
+        </div>
+    } else {
+        <p style="color:var(--fg-3);text-align:center;padding:32px 0;">No comments yet — be the first!</p>
+    }
+</div>
+
+<!-- Related stories -->
+@if (ViewBag.RelatedPosts != null && ViewBag.RelatedPosts.Count > 0) {
+    <div class="dt-story-related">
+        <h3 style="font-size:28px;font-weight:500;color:var(--fg);margin:0 0 32px;">Related <em class="serif-it">stories</em></h3>
+        <div class="dt-stories-grid-3">
+            @foreach (var rp in ViewBag.RelatedPosts) {
+                <a href="@Url.Action("Details","TourStories", new { id = rp.Id, slug = rp.Slug })" class="dt-story-card">
+                    <div class="dt-story-card-photo">
+                        @if (!string.IsNullOrEmpty(rp.CoverImage)) { <img src="@rp.CoverImage" alt="@rp.Title" loading="lazy"> }
+                    </div>
+                    <div class="dt-story-card-meta">
+                        <h3 class="dt-story-card-title">@rp.Title</h3>
+                        <p class="dt-story-card-excerpt">@(rp.Excerpt != null && rp.Excerpt.Length > 80 ? rp.Excerpt.Substring(0,80) + "…" : rp.Excerpt)</p>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+}
+
+<!-- Lightbox for gallery -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(5,8,7,0.92);backdrop-filter:blur(16px);z-index:300;align-items:center;justify-content:center;padding:24px;"
+     onclick="closeLightbox()">
+    <button style="position:absolute;top:20px;right:20px;background:rgba(20,28,24,0.8);border:1px solid rgba(255,255,255,0.12);color:#EAF0EC;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;"
+            onclick="closeLightbox()">&#215;</button>
+    <img id="lightbox-image" src="" alt="" style="max-width:min(92vw,1200px);max-height:90vh;border-radius:12px;object-fit:contain;" onclick="event.stopPropagation()">
+</div>
+
+@section Scripts {
+    
+    <script>
+    function openLightbox(src) {
+        document.getElementById('lightbox-image').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+
+    var commentText = document.getElementById('commentText');
+    if (commentText) {
+        commentText.addEventListener('input', function() {
+            document.getElementById('commentCount').textContent = this.value.length;
+        });
+    }
+    </script>
+}
+

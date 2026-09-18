@@ -1,0 +1,55 @@
+@{
+    ViewBag.Title = "Sign-in failed";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .tb-body { padding-top: 0 !important; }
+</style>
+
+<div class="dt-auth">
+    <div class="dt-auth-left">
+        <div class="dt-auth-content">
+            <div class="dt-auth-brand">
+                <a class="dt-brand" href="@Url.Action("Index","Home")">
+                    <span class="dt-brand-mark"><span class="dt-brand-mark-dot"></span></span>
+                    <span class="dt-brand-text">TaxiBlitz <em class="serif-it">Ohrid</em></span>
+                </a>
+            </div>
+            <div class="dt-auth-card">
+                <div style="text-align:center;margin-bottom:24px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="width:56px;height:56px;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <h2 class="dt-auth-h" style="text-align:center;">Sign-in<br><em class="serif-it">failed.</em></h2>
+                <p class="dt-auth-sub" style="text-align:center;">
+                    We couldn't complete your Google sign-in. This can happen if you denied permission, closed the window early, or your session timed out.
+                </p>
+                <div style="margin-top:28px;text-align:center;">
+                    <a href="@Url.Action("Login","Account")" class="dt-auth-submit" style="display:inline-flex;text-decoration:none;">
+                        Try again
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                </div>
+                <p style="color:var(--fg-4);font-size:12px;text-align:center;margin-top:20px;line-height:1.6;">
+                    If this keeps happening, try signing in with email and password instead, or contact us at
+                    <a href="mailto:taxiblitzohrid@gmail.com" class="dt-auth-link">taxiblitzohrid@gmail.com</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="dt-auth-right">
+        <div class="dt-auth-photo"></div>
+        <div class="dt-auth-photo-overlay"></div>
+        <div class="dt-auth-photo-quote">
+            "Every detour leads somewhere — <em>try a different path.</em>"
+            <div class="dt-auth-photo-author">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                TaxiBlitz Ohrid
+            </div>
+        </div>
+    </div>
+</div>

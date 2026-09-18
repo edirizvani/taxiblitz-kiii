@@ -1,0 +1,103 @@
+@model IEnumerable<TourPost>
+@{
+    ViewBag.Title = "Stories";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int totalPages   = ViewBag.TotalPages  != null ? (int)ViewBag.TotalPages  : 0;
+    int currentPage  = ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1;
+    string activeTag = ViewBag.ActiveTag   as string ?? "";
+    var allTags      = (ViewBag.AllTags    as IEnumerable<string>) ?? Enumerable.Empty<string>();
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">From the road</span>
+            <h1 style="font-size:72px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);"><em class="serif-it">Stories</em></h1>
+            <p class="dt-page-head-sub">Travel experiences, hidden spots and unforgettable moments around Ohrid.</p>
+        </div>
+        @if (User.IsInRole("Administrator")) {
+            <div class="dt-page-head-right" style="display:flex;gap:10px;">
+                @Html.ActionLink("+ New story", "Create", "TourStories", null, new { @class = "btn btn-primary" })
+                @Html.ActionLink("Manage stories", "Management", "TourStories", null, new { @class = "btn btn-ghost" })
+            </div>
+        }
+    </div>
+
+    @if (allTags.Any()) {
+        <div style="padding:0 80px 32px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+            <a href="@Url.Action("Index","TourStories")"
+               class="pill @(string.IsNullOrEmpty(activeTag) ? "pill-active" : "")">All</a>
+            @foreach (var tag in allTags) {
+                <a href="@Url.Action("Index","TourStories", new { tag = tag.Trim() })"
+                   class="pill @(activeTag == tag.Trim() ? "pill-active" : "")">@tag.Trim()</a>
+            }
+        </div>
+    }
+
+    @if (Model.Any()) {
+        <div class="dt-stories-grid-3">
+            @foreach (var post in Model) {
+                <a href="@Url.Action("Details","TourStories", new { id = post.Id, slug = post.Slug })" class="dt-story-card">
+                    <div class="dt-story-card-photo">
+                        @if (!string.IsNullOrEmpty(post.CoverImage)) {
+                            <img src="@post.CoverImage" alt="@post.Title" loading="lazy">
+                        } else {
+                            <div style="width:100%;height:100%;background:linear-gradient(155deg,#1a2e2e 0%,#091418 100%);"></div>
+                        }
+                        @if (post.IsFeatured) {
+                            <span class="dt-story-featured">Featured</span>
+                        }
+                        @if (!string.IsNullOrEmpty(post.TourDestination)) {
+                            <span class="dt-story-dest">@post.TourDestination</span>
+                        }
+                    </div>
+                    <div class="dt-story-card-meta">
+                        <h3 class="dt-story-card-title">@post.Title</h3>
+                        <p class="dt-story-card-excerpt">@(post.Excerpt != null && post.Excerpt.Length > 110 ? post.Excerpt.Substring(0,110) + "…" : post.Excerpt)</p>
+                        <div class="dt-story-card-foot">
+                            <div class="dt-story-card-author">
+                                <div class="dt-story-card-avatar"></div>
+                                <div>
+                                    <strong>@(post.Author != null ? post.Author.UserName : "TaxiBlitz Team")</strong>
+                                    <span>@post.CreatedDate.ToString("MMM d, yyyy")</span>
+                                </div>
+                            </div>
+                            <span class="dt-story-card-link">
+                                Read
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    } else {
+        <div style="text-align:center;padding:80px 24px;">
+            <p style="font-size:20px;color:var(--fg-2);">No stories yet — check back soon.</p>
+            <a href="@Url.Action("Index","Home")" class="btn btn-ghost" style="margin-top:20px;">Back to home</a>
+        </div>
+    }
+
+    @if (totalPages > 1) {
+        <div class="dt-pagination">
+            @if (currentPage > 1) {
+                <a href="@Url.Action("Index", new { page = currentPage - 1, tag = activeTag })">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                </a>
+            }
+            @for (int i = 1; i <= totalPages; i++) {
+                if (i == currentPage) {
+                    <span class="active">@i</span>
+                } else {
+                    <a href="@Url.Action("Index", new { page = i, tag = activeTag })">@i</a>
+                }
+            }
+            @if (currentPage < totalPages) {
+                <a href="@Url.Action("Index", new { page = currentPage + 1, tag = activeTag })">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            }
+        </div>
+    }
+</div>
+

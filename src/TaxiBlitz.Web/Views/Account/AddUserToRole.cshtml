@@ -1,0 +1,40 @@
+@model AddToRoleModel
+
+@{
+    ViewBag.Title = "Add User to Role";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:56px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">User <em class="serif-it">roles</em></h1>
+        </div>
+    </div>
+
+    <div style="margin:0 80px 48px;max-width:560px;">
+        <div class="dt-form-card">
+            @using (Html.BeginForm("AddUserToRole", "Account")) {
+                @Html.AntiForgeryToken()
+
+                <div class="dt-field">
+                    @Html.LabelFor(model => model.Email)
+                    @Html.TextBoxFor(model => model.Email, new { placeholder = "user@example.com" })
+                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div class="dt-field">
+                    @Html.LabelFor(model => model.SelectedRole, "Select role")
+                    @Html.DropDownListFor(model => model.SelectedRole, new SelectList(Model.Roles), "Choose a role…", new { @class = "dt-select" })
+                    @Html.ValidationMessageFor(model => model.SelectedRole, "", new { @class = "field-validation-error" })
+                </div>
+
+                <button type="submit" class="dt-auth-submit" style="margin-top:8px;">
+                    Assign role
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+

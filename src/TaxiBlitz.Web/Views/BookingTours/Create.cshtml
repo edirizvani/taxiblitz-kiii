@@ -1,0 +1,255 @@
+@model BookingTour
+
+@{
+    ViewBag.Title = "Book a Tour";
+    var selectedTour = ViewBag.SelectedTour as Tour;
+}
+
+<div class="dt-booking">
+    <!-- Left info panel -->
+    <div class="dt-booking-left">
+        <span class="eyebrow">Reserve your spot</span>
+        <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:500;letter-spacing:-0.03em;line-height:1;margin:14px 0 16px;color:var(--fg);">Book a <em class="serif-it">tour.</em></h1>
+        <p style="color:var(--fg-2);font-size:15px;line-height:1.65;max-width:340px;">Complete your booking in moments. Our team will confirm your reservation and prepare your unforgettable experience.</p>
+
+        @if (selectedTour != null) {
+            <div style="margin-top:32px;background:rgba(103,232,249,0.06);border:1px solid rgba(103,232,249,0.18);border-radius:16px;padding:20px;">
+                <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--lime);display:block;margin-bottom:10px;">Selected tour</span>
+                <div style="font-size:18px;font-weight:500;color:var(--fg);margin-bottom:6px;">@selectedTour.Title</div>
+                <div style="font-size:14px;color:var(--fg-2);">@selectedTour.StartingPoint ? @selectedTour.EndingPoint</div>
+                @if (selectedTour.Price > 0) {
+                    <div style="margin-top:12px;font-size:22px;font-weight:600;color:var(--lime);">€@selectedTour.Price</div>
+                }
+            </div>
+        }
+
+        <div style="margin-top:40px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:rgba(103,232,249,0.1);border:1px solid rgba(103,232,249,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                </div>
+                <span style="font-size:14px;color:var(--fg-2);">All tours depart from central Ohrid</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:rgba(103,232,249,0.1);border:1px solid rgba(103,232,249,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <span style="font-size:14px;color:var(--fg-2);">Free cancellation up to 24h before</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:rgba(103,232,249,0.1);border:1px solid rgba(103,232,249,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.44 2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </div>
+                <span style="font-size:14px;color:var(--fg-2);">24/7 support: +389 70 589 874</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="dt-booking-right">
+        @using (Html.BeginForm("Create", "BookingTours", FormMethod.Post, new { id = "booking-form" })) {
+            @Html.AntiForgeryToken()
+
+            <h2 style="font-size:22px;font-weight:500;color:var(--fg);margin:0 0 24px;">Your details</h2>
+
+            <div class="dt-field">
+                @Html.LabelFor(model => model.NameOfBookMaker)
+                @Html.EditorFor(model => model.NameOfBookMaker, new { htmlAttributes = new { placeholder = "Full name" } })
+                @Html.ValidationMessageFor(model => model.NameOfBookMaker, "", new { @class = "field-validation-error" })
+            </div>
+
+            <div class="dt-field">
+                <label>Phone number</label>
+                <div class="dt-phone-row">
+                    <select id="bkPhonePrefix" class="dt-phone-prefix"></select>
+                    <input id="bkPhoneCustom" type="text" placeholder="+XX" class="dt-phone-custom" style="display:none;">
+                    <input id="bkPhoneLocal" type="tel" placeholder="70 000 000" class="dt-phone-local">
+                </div>
+                <input type="hidden" id="PhoneNumber" name="PhoneNumber" value="@Model.PhoneNumber" />
+                @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "field-validation-error" })
+            </div>
+            <div class="dt-field" style="margin:0;">
+                @Html.LabelFor(model => model.NumberOfPeople)
+                @Html.EditorFor(model => model.NumberOfPeople, new { htmlAttributes = new { min = "1", value = "1" } })
+                @Html.ValidationMessageFor(model => model.NumberOfPeople, "", new { @class = "field-validation-error" })
+            </div>
+
+            <div style="margin:24px 0 8px;height:1px;background:var(--line);"></div>
+            <h3 style="font-size:13px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.12em;color:var(--fg-3);margin:0 0 16px;">Tour selection</h3>
+
+            <div class="dt-field">
+                @Html.LabelFor(model => model.TourId)
+                @Html.DropDownListFor(model => model.TourId, ViewBag.TourId as SelectList, "Select a tour", new { @class = "dt-select", onchange = "updateTourPrice()" })
+                @Html.ValidationMessageFor(model => model.TourId, "", new { @class = "field-validation-error" })
+            </div>
+
+            <div id="tourPriceDisplay" style="display:none;background:rgba(103,232,249,0.06);border:1px solid rgba(103,232,249,0.18);border-radius:12px;padding:16px;margin-bottom:16px;">
+                <div style="font-size:13px;color:var(--fg-2);margin-bottom:8px;">Tour price:</div>
+                <div style="font-size:22px;font-weight:600;color:var(--lime);" id="tourPrice">€0.00</div>
+            </div>
+
+            <div class="dt-field">
+                @Html.LabelFor(model => model.DriverId, "Driver (optional)")
+                @Html.DropDownListFor(model => model.DriverId, ViewBag.DriverId as SelectList ?? new SelectList(new List<object>(), "Id", "Name"), "Any available driver", new { @class = "dt-select" })
+                <span style="font-size:12px;color:var(--fg-3);margin-top:6px;display:block;">Leave blank to request any available driver</span>
+            </div>
+
+            <div style="margin:24px 0 8px;height:1px;background:var(--line);"></div>
+            <h3 style="font-size:13px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.12em;color:var(--fg-3);margin:0 0 16px;">Date & time</h3>
+
+            <div class="dt-field">
+                @Html.LabelFor(model => model.BookingDateTime)
+                <input type="datetime-local" class="form-control" name="BookingDateTime" id="BookingDateTime"
+                       value="@Model.BookingDateTime.ToString("yyyy-MM-ddTHH:mm")"
+                       style="background:var(--ink-3);border:1px solid var(--line-2);color:var(--fg);border-radius:12px;padding:12px 14px;font-size:14px;width:100%;color-scheme:dark;" />
+                <span style="font-size:12px;color:var(--fg-3);margin-top:6px;display:block;">Minimum 1 hour from now</span>
+                @Html.ValidationMessageFor(model => model.BookingDateTime, "", new { @class = "field-validation-error" })
+            </div>
+
+            <div style="margin:24px 0 8px;height:1px;background:var(--line);"></div>
+            <details style="margin-bottom:16px;">
+                <summary style="font-size:13px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.12em;color:var(--fg-3);cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                    Have a referral code?
+                </summary>
+                <div style="margin-top:16px;">
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                        <input type="text" id="referralCodeInput" name="ReferralCode" placeholder="Enter code (e.g. TB1234)"
+                               style="flex:1;background:var(--ink-3);border:1px solid var(--line-2);color:var(--fg);border-radius:12px;padding:12px 14px;font-size:14px;"
+                               oninput="this.value = this.value.toUpperCase()" />
+                        <button type="button" onclick="validateReferralCode()"
+                                style="background:var(--ink-3);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-size:14px;color:var(--fg);cursor:pointer;white-space:nowrap;">
+                            Apply
+                        </button>
+                    </div>
+                    <div id="referralMsg" style="margin-top:8px;font-size:13px;display:none;"></div>
+                    <div id="referralPriceDisplay" style="display:none;margin-top:16px;background:rgba(103,232,249,0.06);border:1px solid rgba(103,232,249,0.18);border-radius:12px;padding:16px;">
+                        <div style="font-size:13px;color:var(--fg-2);margin-bottom:8px;">Original price:</div>
+                        <div style="font-size:16px;color:var(--fg);" id="originalPrice">€0.00</div>
+                        
+                        <div style="margin-top:12px;font-size:13px;color:var(--fg-2);margin-bottom:8px;">Discount:</div>
+                        <div style="font-size:16px;color:#F87171;" id="discountAmount">-€0.00</div>
+                        
+                        <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(103,232,249,0.18);font-size:13px;color:var(--fg-2);margin-bottom:8px;">Final price:</div>
+                        <div style="font-size:22px;font-weight:600;color:var(--lime);" id="finalPrice">€0.00</div>
+                    </div>
+                </div>
+            </details>
+
+            <button type="submit" class="dt-booking-submit">
+                Confirm booking
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validate-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="@Url.Content("~/js/phone-prefix.js")"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var bookingInput = document.getElementById("BookingDateTime");
+            var now = new Date();
+            now.setMinutes(now.getMinutes() + 60);
+            now.setSeconds(0, 0);
+            bookingInput.min = now.toISOString().slice(0, 16);
+
+            initPhonePrefix({
+                formSel:   '#booking-form',
+                selectSel: '#bkPhonePrefix',
+                customSel: '#bkPhoneCustom',
+                localSel:  '#bkPhoneLocal',
+                hiddenSel: '#PhoneNumber'
+            });
+        });
+    </script>
+    <script>
+    var tourPricesMap = {
+        @{
+            var tourPrices = ViewBag.TourPrices as Dictionary<string, decimal>;
+            if (tourPrices != null) {
+                var items = tourPrices.ToList();
+                for (int i = 0; i < items.Count; i++) {
+                    @Html.Raw($"'{items[i].Key}': {items[i].Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}")
+                    if (i < items.Count - 1) { @Html.Raw(",") }
+                }
+            }
+        }
+    };
+
+    function updateTourPrice() {
+        var tourId = document.getElementById('TourId').value;
+        var priceDisplay = document.getElementById('tourPriceDisplay');
+        var tourPriceElem = document.getElementById('tourPrice');
+        var referralCodeInput = document.getElementById('referralCodeInput');
+        
+        if (tourId && tourPricesMap[tourId]) {
+            var price = tourPricesMap[tourId];
+            tourPriceElem.textContent = '€' + price.toFixed(2);
+            priceDisplay.style.display = 'block';
+            
+            // Clear referral code when tour changes
+            referralCodeInput.value = '';
+            document.getElementById('referralMsg').style.display = 'none';
+            document.getElementById('referralPriceDisplay').style.display = 'none';
+        } else {
+            priceDisplay.style.display = 'none';
+            document.getElementById('referralPriceDisplay').style.display = 'none';
+        }
+    }
+
+    function validateReferralCode() {
+        var code = document.getElementById('referralCodeInput').value.trim();
+        var tourId = document.getElementById('TourId').value;
+        var msg  = document.getElementById('referralMsg');
+        
+        if (!code) {
+            msg.style.display = 'none';
+            return;
+        }
+        
+        if (!tourId) {
+            msg.style.display = 'block';
+            msg.style.color = '#F87171';
+            msg.textContent = 'Please select a tour first.';
+            return;
+        }
+        
+        var tourPrice = tourPricesMap[tourId];
+        
+        fetch('/Referral/ValidateCode?code=' + encodeURIComponent(code))
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                msg.style.display = 'block';
+                var priceDisplay = document.getElementById('referralPriceDisplay');
+
+                if (data.valid) {
+                    msg.style.color = 'var(--lime)';
+                    msg.textContent = data.message;
+
+                    // Show price breakdown
+                    var discountAmount = tourPrice * (data.discountPercent / 100);
+                    var finalPrice = tourPrice - discountAmount;
+
+                    document.getElementById('originalPrice').textContent = '€' + tourPrice.toFixed(2);
+                    document.getElementById('discountAmount').textContent = '-€' + discountAmount.toFixed(2);
+                    document.getElementById('finalPrice').textContent = '€' + finalPrice.toFixed(2);
+
+                    priceDisplay.style.display = 'block';
+                } else {
+                    msg.style.color = '#F87171';
+                    msg.textContent = data.message;
+                    priceDisplay.style.display = 'none';
+                }
+            })
+            .catch(function () {
+                msg.style.display = 'block';
+                msg.style.color = '#F87171';
+                msg.textContent = 'Could not validate referral code. Please try again.';
+            });
+    }
+    </script>
+}
+

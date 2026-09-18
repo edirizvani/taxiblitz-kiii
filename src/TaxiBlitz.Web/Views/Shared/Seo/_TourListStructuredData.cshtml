@@ -1,0 +1,16 @@
+@model IEnumerable<Tour>
+@using Newtonsoft.Json
+@using TaxiBlitz.Infrastructure.Seo
+@{
+    var tours = Model ?? Enumerable.Empty<Tour>();
+    var schemas = StructuredDataBuilder.BuildTourListSchemas(tours);
+}
+
+@if (schemas != null && schemas.Count > 0)
+{
+    foreach (var s in schemas)
+    {
+        <script type="application/ld+json">@Html.Raw(JsonConvert.SerializeObject(s, Formatting.None))</script>
+    }
+}
+

@@ -1,0 +1,146 @@
+@model Driver
+
+@{
+    ViewBag.Title = "Driver Details";
+    var driverImage = string.IsNullOrWhiteSpace(Model.PhotoProfileUrl) ? Url.Content("~/img/background.jpg") : Model.PhotoProfileUrl;
+}
+
+<div class="dt-page-pad">
+    <!-- Driver hero card -->
+    <div class="ddd-hero-card" style="margin:0 80px 48px;background:var(--ink-2);border:1px solid var(--line);border-radius:28px;overflow:hidden;display:grid;grid-template-columns:360px 1fr;">
+        <!-- Photo -->
+        <div class="ddd-photo-col" style="position:relative;min-height:480px;">
+            <img src="@driverImage" alt="@Model.Name" loading="lazy"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
+            <div class="ddd-photo-grad" style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,var(--ink-2));"></div>
+            @if (Model.Rating.HasValue) {
+                <div class="dt-driver-rating-pill" style="position:absolute;top:20px;left:20px;">? @Model.Rating.Value.ToString("F2")</div>
+            }
+        </div>
+
+        <!-- Info -->
+        <div class="ddd-info-col" style="padding:48px 44px;display:flex;flex-direction:column;justify-content:center;">
+            <span class="eyebrow">Professional driver</span>
+            <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:500;letter-spacing:-0.03em;line-height:1;margin:14px 0 20px;color:var(--fg);">@Model.Name</h1>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Bio)) {
+                <p style="color:var(--fg-2);font-size:15px;line-height:1.7;max-width:480px;margin:0 0 32px;">@Model.Bio</p>
+            }
+
+            <!-- Chips -->
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:32px;">
+                @if (!string.IsNullOrWhiteSpace(Model.VehicleType)) {
+                    <span class="pill">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 4v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        @Model.VehicleType
+                    </span>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Languages)) {
+                    foreach (var lang in Model.Languages.Split(new[]{','}, System.StringSplitOptions.RemoveEmptyEntries)) {
+                        <span class="pill">@lang.Trim()</span>
+                    }
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.CoverageAreas)) {
+                    <span class="pill">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                        @Model.CoverageAreas
+                    </span>
+                }
+                @if (Model.ExperienceYears.HasValue) {
+                    <span class="pill">@Model.ExperienceYears.Value yr@(Model.ExperienceYears.Value != 1 ? "s" : "") exp.</span>
+                }
+                @if (Model.TripsCompleted.HasValue) {
+                    <span class="pill">@Model.TripsCompleted.Value.ToString("N0") trips</span>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Specialties)) {
+                    foreach (var spec in Model.Specialties.Split(new[]{','}, System.StringSplitOptions.RemoveEmptyEntries)) {
+                        <span class="pill">@spec.Trim()</span>
+                    }
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Email)) {
+                    <span class="pill">@Model.Email</span>
+                }
+                @if (!Model.Rating.HasValue && string.IsNullOrWhiteSpace(Model.VehicleType) && string.IsNullOrWhiteSpace(Model.Languages)
+                     && string.IsNullOrWhiteSpace(Model.CoverageAreas) && !Model.ExperienceYears.HasValue) {
+                    <span class="pill">Ohrid specialist</span>
+                }
+            </div>
+
+            <!-- Actions -->
+            <div class="ddd-actions" style="display:flex;flex-wrap:wrap;gap:12px;">
+                @Html.ActionLink("Book this driver", "Create", "BookingTours",
+                    new { driverId = Model.Id, bookingName = User.Identity.IsAuthenticated ? User.Identity.Name : Model.Name },
+                    new { @class = "btn btn-primary" })
+                @Html.ActionLink("All drivers", "Index", "Drivers", null, new { @class = "btn btn-ghost" })
+                @if (User.IsInRole("Administrator")) {
+                    @Html.ActionLink("Edit", "Edit", "Drivers", new { id = Model.Id }, new { @class = "btn btn-ghost" })
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery -->
+    @if (Model.PictureUrls != null && Model.PictureUrls.Any()) {
+        <div class="ddd-gallery-wrap" style="margin:0 80px 48px;">
+            <h2 style="font-size:28px;font-weight:500;letter-spacing:-0.02em;color:var(--fg);margin:0 0 24px;">Gallery</h2>
+            <div class="dt-gallery-grid">
+                @{ int gi = 0; }
+                @foreach (var pic in Model.PictureUrls.Take(6)) {
+                    string gc = gi == 0 ? "dt-gallery-cell dt-gallery-cell-0" : "dt-gallery-cell";
+                    <div class="@gc">
+                        <img src="@pic" alt="@Model.Name" loading="lazy"
+                             style="width:100%;height:100%;object-fit:cover;border-radius:16px;" />
+                    </div>
+                    gi++;
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Head {
+    <style>
+        @@media (max-width: 860px) {
+            .ddd-hero-card {
+                margin: 0 20px 32px !important;
+                grid-template-columns: 1fr !important;
+                border-radius: 20px !important;
+            }
+            .ddd-photo-col {
+                min-height: 300px !important;
+            }
+            .ddd-photo-grad {
+                background: linear-gradient(180deg, transparent 50%, var(--ink-2)) !important;
+            }
+            .ddd-info-col {
+                padding: 28px 24px 32px !important;
+            }
+            .ddd-gallery-wrap {
+                margin: 0 20px 40px !important;
+            }
+        }
+        @@media (max-width: 520px) {
+            .ddd-hero-card {
+                margin: 0 12px 24px !important;
+                border-radius: 16px !important;
+            }
+            .ddd-photo-col {
+                min-height: 240px !important;
+            }
+            .ddd-info-col {
+                padding: 20px 16px 24px !important;
+            }
+            .ddd-actions {
+                flex-direction: column !important;
+            }
+            .ddd-actions .btn {
+                justify-content: center;
+                width: 100%;
+            }
+            .ddd-gallery-wrap {
+                margin: 0 12px 28px !important;
+            }
+        }
+    </style>
+}
+

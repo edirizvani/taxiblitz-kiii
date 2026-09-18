@@ -1,0 +1,176 @@
+@model TaxiBlitz.Application.ViewModels.ReceptionistDashboardViewModel
+@using System.Globalization
+
+<style>
+    @@media (max-width: 640px) {
+        .dt-page-head h1 { font-size: 32px !important; }
+        .dt-admin-table-section { margin: 0 16px 40px !important; padding: 0 !important; }
+
+        .dt-admin-table thead { display: none; }
+        .dt-admin-table,
+        .dt-admin-table tbody,
+        .dt-admin-table tr,
+        .dt-admin-table td { display: block; width: 100%; box-sizing: border-box; }
+        .dt-admin-table { border-radius: 0; border: none; background: transparent; }
+        .dt-admin-table tr {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            background: var(--ink-2);
+        }
+        .dt-admin-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+            border-top: 1px solid var(--line);
+        }
+        .dt-admin-table td:first-child { border-top: none; }
+        .dt-admin-table td::before {
+            content: attr(data-label);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--fg-3);
+            flex-shrink: 0;
+            padding-top: 2px;
+            min-width: 80px;
+        }
+        .dt-admin-table td[colspan] { justify-content: center; }
+        .dt-admin-table td[colspan]::before { display: none; }
+    }
+</style>
+
+@{
+    ViewBag.Title = "My Dashboard";
+    string FormatEur(decimal v) => "€" + v.ToString("F2", CultureInfo.InvariantCulture);
+}
+
+<div class="dt-page-pad">
+
+@if (TempData["Success"] != null) {
+    <div style="margin:0 48px 24px;padding:14px 20px;border-radius:12px;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);color:#4ADE80;font-size:14px;">
+        @TempData["Success"]
+    </div>
+}
+
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Receptionist</span>
+            <h1 style="font-size:56px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">My <em class="serif-it">Dashboard</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            <form method="post" action="@Url.Action("GenerateCode","Receptionist")">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">+ Generate Code</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Earnings summary tiles -->
+    <div class="dt-admin-tiles">
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#4ADE80;">@FormatEur(Model.TotalEarned)</span>
+            <span class="dt-admin-tile-l">Total Earned</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#67E8F9;">@FormatEur(Model.TotalPaid)</span>
+            <span class="dt-admin-tile-l">Paid Out</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#FACC15;">@FormatEur(Model.TotalPending)</span>
+            <span class="dt-admin-tile-l">Pending</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:var(--fg-3);">@Model.Codes.Count</span>
+            <span class="dt-admin-tile-l">Codes Generated</span>
+        </div>
+    </div>
+
+    <!-- Referral codes table -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:var(--fg);">Referral Codes</span>
+            <span class="dt-admin-table-badge">@Model.Codes.Count</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Status</th>
+                    <th>Used By</th>
+                    <th>Booking Date</th>
+                    <th>Booking Status</th>
+                    <th>Commission</th>
+                    <th>Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Codes.Any()) {
+                    <tr><td colspan="7" style="text-align:center;color:var(--fg-3);">No codes yet — generate your first one above</td></tr>
+                }
+                @foreach (var row in Model.Codes) {
+                    <tr>
+                        <td data-label="Code">
+                            <code style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--fg);letter-spacing:0.08em;">@row.Code</code>
+                        </td>
+                        <td data-label="Status">
+                            @if (row.IsActive) {
+                                <span style="color:#4ADE80;font-size:12px;">Active</span>
+                            } else {
+                                <span style="color:#F87171;font-size:12px;">Inactive</span>
+                            }
+                        </td>
+                        <td data-label="Used By">
+                            @if (row.UsedByEmail != null) {
+                                <span style="font-size:13px;">@row.UsedByEmail</span>
+                            } else {
+                                <span style="color:var(--fg-3);">—</span>
+                            }
+                        </td>
+                        <td data-label="Booking Date">
+                            @if (row.BookingDate.HasValue) {
+                                <span style="font-size:13px;">@row.BookingDate.Value.ToString("MMM d, yyyy · HH:mm")</span>
+                            } else {
+                                <span style="color:var(--fg-3);">—</span>
+                            }
+                        </td>
+                        <td data-label="Booking Status">
+                            @{
+                                var statusColor = row.BookingStatus switch {
+                                    "Approved"  => "#4ADE80",
+                                    "Pending"   => "#FACC15",
+                                    "Canceled"  => "#F87171",
+                                    "Cancelled" => "#F87171",
+                                    _           => "var(--fg-3)"
+                                };
+                            }
+                            <span style="color:@statusColor;font-size:12px;">@row.BookingStatus</span>
+                        </td>
+                        <td data-label="Commission">
+                            @if (row.CommissionAmount.HasValue) {
+                                <span style="color:#4ADE80;font-weight:600;">@FormatEur(row.CommissionAmount.Value)</span>
+                            } else {
+                                <span style="color:var(--fg-3);">—</span>
+                            }
+                        </td>
+                        <td data-label="Paid">
+                            @if (!row.CommissionAmount.HasValue) {
+                                <span style="color:var(--fg-3);">—</span>
+                            } else if (row.CommissionPaid) {
+                                <span style="color:#67E8F9;font-size:12px;" title="@row.CommissionPaidAt?.ToString("MMM d, yyyy")">Paid</span>
+                            } else {
+                                <span style="color:#FACC15;font-size:12px;">Pending</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

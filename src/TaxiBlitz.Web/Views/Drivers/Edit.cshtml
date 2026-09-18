@@ -1,0 +1,99 @@
+@model Driver
+
+@{
+    ViewBag.Title = "Edit Driver";
+}
+
+<div class="dt-page-pad">
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:48px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Edit <em class="serif-it">driver</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("Back to drivers", "Index", null, new { @class = "btn btn-ghost" })
+        </div>
+    </div>
+
+    <div style="margin:0 80px 64px;max-width:560px;">
+        <div class="dt-form-card">
+            @using (Html.BeginForm()) {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+                @Html.HiddenFor(m => m.Id)
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Name)
+                    @Html.EditorFor(m => m.Name)
+                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Email)
+                    @Html.EditorFor(m => m.Email)
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Bio)
+                    @Html.TextAreaFor(m => m.Bio, new { rows = "4" })
+                    @Html.ValidationMessageFor(m => m.Bio, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.PhotoProfileUrl)
+                    @Html.EditorFor(m => m.PhotoProfileUrl)
+                    @Html.ValidationMessageFor(m => m.PhotoProfileUrl, "", new { @class = "field-validation-error" })
+                </div>
+
+                <div style="margin:28px 0 20px;padding-top:24px;border-top:1px solid var(--line);">
+                    <span style="font-size:11px;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-4);">Professional details (optional)</span>
+                </div>
+
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Rating)
+                    @Html.EditorFor(m => m.Rating, new { htmlAttributes = new { type = "number", step = "0.01", min = "0", max = "5" } })
+                    @Html.ValidationMessageFor(m => m.Rating, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Languages)
+                    @Html.EditorFor(m => m.Languages, new { htmlAttributes = new { placeholder = "English, Macedonian, German" } })
+                    @Html.ValidationMessageFor(m => m.Languages, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.VehicleType)
+                    @Html.EditorFor(m => m.VehicleType, new { htmlAttributes = new { placeholder = "Mercedes Vito 8-seater" } })
+                    @Html.ValidationMessageFor(m => m.VehicleType, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.CoverageAreas)
+                    @Html.EditorFor(m => m.CoverageAreas, new { htmlAttributes = new { placeholder = "Ohrid, Struga, Bitola, Skopje" } })
+                    @Html.ValidationMessageFor(m => m.CoverageAreas, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.ExperienceYears)
+                    @Html.EditorFor(m => m.ExperienceYears, new { htmlAttributes = new { type = "number", min = "0" } })
+                    @Html.ValidationMessageFor(m => m.ExperienceYears, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.TripsCompleted)
+                    @Html.EditorFor(m => m.TripsCompleted, new { htmlAttributes = new { type = "number", min = "0" } })
+                    @Html.ValidationMessageFor(m => m.TripsCompleted, "", new { @class = "field-validation-error" })
+                </div>
+                <div class="dt-field">
+                    @Html.LabelFor(m => m.Specialties)
+                    @Html.EditorFor(m => m.Specialties, new { htmlAttributes = new { placeholder = "Airport transfers, Day tours, Mountain routes" } })
+                    @Html.ValidationMessageFor(m => m.Specialties, "", new { @class = "field-validation-error" })
+                </div>
+
+                <button type="submit" class="dt-auth-submit" style="margin-top:8px;">
+                    Save changes
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validate-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+

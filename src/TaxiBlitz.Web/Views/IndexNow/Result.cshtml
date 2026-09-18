@@ -1,0 +1,20 @@
+@{
+    ViewBag.Title = "IndexNow Submission";
+    var status  = ViewBag.Status  as int?;
+    var message = ViewBag.Message as string;
+}
+
+<div class="container mt-5">
+    <h2>IndexNow Submission</h2>
+
+    @if (message != null)
+    {
+        var alertClass = (status >= 200 && status < 300) ? "alert-success" : "alert-danger";
+        <div class="alert @alertClass mt-3">@message</div>
+    }
+
+    <form method="post" action="/indexnow/submit">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-primary mt-3">Submit All URLs to IndexNow</button>
+    </form>
+</div>

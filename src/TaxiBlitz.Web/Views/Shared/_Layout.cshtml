@@ -1,0 +1,397 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Taxi Blitz Ohrid</title>
+    @{
+        var _metaDesc    = ViewBag.MetaDescription as string ?? "Private taxi tours, airport transfers and day trips around Ohrid, North Macedonia. Book with Taxi Blitz Ohrid — 25+ years of local expertise, available 24/7.";
+        var _canonical   = ViewBag.CanonicalUrl   as string ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+        var _ogTitle     = ViewBag.Title != null ? ViewBag.Title + " - Taxi Blitz Ohrid" : "Taxi Blitz Ohrid — Private Tours & Airport Transfers";
+        var _ogImage     = ViewBag.OgImage as string ?? "https://taxiblitzohrid.com/img/og-image.jpg";
+    }
+    <meta name="description" content="@_metaDesc" />
+    <link rel="canonical" href="@_canonical" />
+    <!-- PWA -->
+    <link rel="manifest" href="~/manifest.json" />
+    <meta name="theme-color" content="#0B100E" />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Taxi Blitz Ohrid" />
+    <meta property="og:title" content="@_ogTitle" />
+    <meta property="og:description" content="@_metaDesc" />
+    <meta property="og:image" content="@_ogImage" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="@_canonical" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@_ogTitle" />
+    <meta name="twitter:description" content="@_metaDesc" />
+    <meta name="twitter:image" content="@_ogImage" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TaxiBlitz" />
+    <!-- Favicon — adaptive SVG (dark/light via prefers-color-scheme), PNG fallbacks, ICO for legacy -->
+    <link rel="icon" type="image/svg+xml" href="~/img/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="~/img/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/img/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="~/img/favicon-512.png" />
+    <!-- Theme anti-FOUC -->
+    <script>(function(){var t=localStorage.getItem('tb-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})()</script>
+    <link rel="stylesheet" href="~/css/taxiblitz-design.css" asp-append-version="true" />
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @Html.Partial("Seo/_GlobalStructuredData")
+    @Html.Partial("Seo/_BreadcrumbStructuredData")
+    @RenderSection("Head", required: false)
+</head>
+<body>
+
+<!-- â”€â”€ NAVBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<header class="dt-nav">
+    <div class="dt-nav-inner">
+        <a class="dt-brand" href="@Url.Action("Index","Home")">
+            <span class="dt-brand-mark"><span class="dt-brand-mark-dot"></span></span>
+            <span class="dt-brand-text">TaxiBlitz <em class="serif-it">Ohrid</em></span>
+        </a>
+
+        <nav class="dt-nav-links">
+            @Html.ActionLink("Home",       "Index",              "Home",         new { area = "" }, null)
+            @Html.ActionLink("Tours",      "Index",              "Tours",        new { area = "" }, null)
+            @Html.ActionLink("Drivers",    "Index",              "Drivers",      new { area = "" }, null)
+            @Html.ActionLink("Stories",    "Index",              "TourStories",  new { area = "" }, null)
+            @Html.ActionLink("Gallery",    "Gallery",            "Manage",       new { area = "" }, null)
+            @if (User.IsInRole("Administrator") || User.IsInRole("User")) {
+                @Html.ActionLink("My Bookings", "UserBookings",  "BookingTours", new { area = "" }, null)
+            }
+            @if (User.IsInRole("Driver")) {
+                @Html.ActionLink("Scheduler", "DriverScheduler", "BookingTours", new { area = "" }, null)
+            }
+            @if (User.IsInRole("Receptionist")) {
+                @Html.ActionLink("Dashboard", "Dashboard", "Receptionist", new { area = "" }, null)
+            }
+            @if (User.IsInRole("Administrator")) {
+                @Html.ActionLink("Dashboard",      "AdministratorIndex", "BookingTours", new { area = "" }, null)
+                @Html.ActionLink("Receptionists",  "Receptionists",      "Admin",        new { area = "" }, null)
+                @Html.ActionLink("My Codes",       "AdminCodes",         "Admin",        new { area = "" }, null)
+                @Html.ActionLink("Stories",        "Management",         "TourStories",  new { area = "" }, null)
+                @Html.ActionLink("Upload",         "Uploadimage",        "Manage",       new { area = "" }, null)
+                @Html.ActionLink("Roles",          "addusertorole",      "account",      new { area = "" }, null)
+            }
+        </nav>
+
+        <div class="dt-nav-right">
+            <!-- Language switcher -->
+            <!-- Theme toggle -->
+            <button class="dt-theme-toggle" onclick="tbToggleTheme()" title="Toggle light/dark mode" type="button">
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"/></svg>
+                <svg class="icon-sun"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </button>
+            @if (!User.Identity.IsAuthenticated) {
+                <a href="@Url.Action("Login","Account")" class="dt-nav-signin">Sign in</a>
+            } else {
+                <div class="dt-nav-user" id="navUserMenu">
+                    <button class="dt-nav-user-btn" id="navUserBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                        <span class="dt-nav-user-avatar">@User.Identity.Name.Substring(0,1).ToUpper()</span>
+                        <span class="dt-nav-user-name">@User.Identity.Name</span>
+                        <svg class="dt-nav-user-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    <div class="dt-nav-user-dropdown" id="navUserDropdown">
+                        @Html.ActionLink("Edit profile",      "EditProfile", "Manage",       new { area = "" }, new { @class = "dt-nav-user-item" })
+                        @Html.ActionLink("Account settings",  "Index",       "Manage",       new { area = "" }, new { @class = "dt-nav-user-item" })
+                        @if (User.IsInRole("Administrator") || User.IsInRole("User")) {
+                            @Html.ActionLink("My Bookings",   "UserBookings", "BookingTours", new { area = "" }, new { @class = "dt-nav-user-item" })
+                            @Html.ActionLink("My Wishlist",   "MyWishlist",   "Favourites",   new { area = "" }, new { @class = "dt-nav-user-item" })
+                            @Html.ActionLink("Referral Code", "MyCode",       "Referral",     new { area = "" }, new { @class = "dt-nav-user-item" })
+                        }
+                        @if (User.IsInRole("Receptionist")) {
+                            @Html.ActionLink("My Dashboard", "Dashboard", "Receptionist", new { area = "" }, new { @class = "dt-nav-user-item" })
+                        }
+                        @if (User.IsInRole("Driver")) {
+                            @Html.ActionLink("My Schedule", "DriverScheduler", "BookingTours", new { area = "" }, new { @class = "dt-nav-user-item" })
+                        }
+                        <div class="dt-nav-user-sep"></div>
+                        @using (Html.BeginForm("LogOff","Account",FormMethod.Post, new { style="margin:0" })) {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="dt-nav-user-item dt-nav-user-signout">Sign out</button>
+                        }
+                    </div>
+                </div>
+            }
+            <a href="@Url.Action("Create","BookingTours")" class="dt-nav-book">
+                Book a tour
+                <span class="dt-nav-book-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </a>
+            <button class="dt-nav-toggle" id="navToggle" aria-label="Open menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile drawer -->
+<div class="dt-nav-drawer" id="navDrawer">
+    <button class="dt-nav-drawer-close" id="navClose" aria-label="Close menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    @Html.ActionLink("Home",       "Index",              "Home",         new { area = "" }, null)
+    @Html.ActionLink("Tours",      "Index",              "Tours",        new { area = "" }, null)
+    @Html.ActionLink("Drivers",    "Index",              "Drivers",      new { area = "" }, null)
+    @Html.ActionLink("Stories",    "Index",              "TourStories",  new { area = "" }, null)
+    @Html.ActionLink("Gallery",    "Gallery",            "Manage",       new { area = "" }, null)
+    @if (User.IsInRole("Administrator") || User.IsInRole("User")) {
+        @Html.ActionLink("My Bookings", "UserBookings",  "BookingTours", new { area = "" }, null)
+    }
+    @if (User.IsInRole("Driver")) {
+        @Html.ActionLink("Scheduler", "DriverScheduler", "BookingTours", new { area = "" }, null)
+    }
+    @if (User.IsInRole("Receptionist")) {
+        @Html.ActionLink("Dashboard", "Dashboard", "Receptionist", new { area = "" }, null)
+    }
+    @if (User.IsInRole("Administrator")) {
+        @Html.ActionLink("Dashboard",     "AdministratorIndex", "BookingTours", new { area = "" }, null)
+        @Html.ActionLink("Receptionists", "Receptionists",      "Admin",        new { area = "" }, null)
+        @Html.ActionLink("My Codes",      "AdminCodes",         "Admin",        new { area = "" }, null)
+        @Html.ActionLink("Upload",        "Uploadimage",        "Manage",       new { area = "" }, null)
+        @Html.ActionLink("Roles",         "addusertorole",      "account",      new { area = "" }, null)
+    }
+    @Html.ActionLink("Book a tour", "Create", "BookingTours", new { area = "" }, null)
+    @if (!User.Identity.IsAuthenticated) {
+        @Html.ActionLink("Sign in", "Login", "Account", new { area = "" }, null)
+    }
+    @if (User.IsInRole("Administrator") || User.IsInRole("User")) {
+        @Html.ActionLink("My Wishlist",   "MyWishlist", "Favourites", new { area = "" }, null)
+        @Html.ActionLink("Referral Code", "MyCode",     "Referral",   new { area = "" }, null)
+    }
+    @if (User.IsInRole("Receptionist")) {
+        @Html.ActionLink("My Dashboard", "Dashboard", "Receptionist", new { area = "" }, null)
+    }
+    <!-- Mobile theme -->
+    <div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);">
+        <button class="dt-theme-toggle" onclick="tbToggleTheme()" title="Toggle theme" type="button" style="width:34px;height:34px;">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"/></svg>
+            <svg class="icon-sun"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+    </div>
+</div>
+
+<!-- â”€â”€ 2FA WARNING BANNER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+@if (ViewBag.ShowTwoFactorWarning == true) {
+    <div class="dt-2fa-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span>Your account has <strong>no two-factor authentication</strong> â€” it is less secure.</span>
+        <a href="@Url.Action("Index","Manage")" class="dt-2fa-banner-btn">Enable 2FA</a>
+    </div>
+}
+
+<!-- â”€â”€ CONTACT MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div class="cm-root" id="contactModal" style="display:none;" role="dialog" aria-modal="true" aria-label="Contact us">
+    <div class="cm-backdrop" id="cmBackdrop"></div>
+    <div class="cm-card">
+        <button class="cm-close" id="cmClose" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <header class="cm-head">
+            <span class="eyebrow">Reach a driver · 24 / 7</span>
+            <h2 class="cm-h">
+                How would you like<br>
+                <em class="serif-it">to get in touch?</em>
+            </h2>
+            <p class="cm-sub">
+                Pick the channel that suits you. Our drivers respond fastest on
+                WhatsApp and Viber. Booking enquiries go to the office line.
+            </p>
+        </header>
+        <div class="cm-grid">
+            <a href="https://wa.me/+38970589874" class="cm-method cm-method-whatsapp" target="_blank" rel="noopener">
+                <span class="cm-method-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4Z"/></svg>
+                </span>
+                <span class="cm-method-text">
+                    <strong>WhatsApp</strong>
+                    <span class="cm-method-val">+389 70 589 874</span>
+                    <span class="cm-method-hint">Reply usually within minutes</span>
+                </span>
+                <span class="cm-method-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                </span>
+            </a>
+            <a href="viber://chat?number=+38970589874" class="cm-method cm-method-viber">
+                <span class="cm-method-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1a7 7 0 0 1-7 7H8l-4 3v-3a7 7 0 0 1 0-7Z"/><path d="M9 11h.01M13 11h.01M17 11h.01"/></svg>
+                </span>
+                <span class="cm-method-text">
+                    <strong>Viber</strong>
+                    <span class="cm-method-val">+389 70 589 874</span>
+                    <span class="cm-method-hint">Also active 09:00 â€“ 22:00</span>
+                </span>
+                <span class="cm-method-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                </span>
+            </a>
+            <a href="mailto:zulirizvani@gmail.com" class="cm-method cm-method-email">
+                <span class="cm-method-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>
+                </span>
+                <span class="cm-method-text">
+                    <strong>Email</strong>
+                    <span class="cm-method-val">zulirizvani@gmail.com</span>
+                    <span class="cm-method-hint">We reply within 4 hours, weekdays</span>
+                </span>
+                <span class="cm-method-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                </span>
+            </a>
+            <a href="tel:+38970589874" class="cm-method cm-method-phone">
+                <span class="cm-method-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3l2 5-2 1.5a11 11 0 0 0 5.5 5.5L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>
+                </span>
+                <span class="cm-method-text">
+                    <strong>Call us</strong>
+                    <span class="cm-method-val">+389 70 589 874</span>
+                    <span class="cm-method-hint">Office line · MK / EN / DE</span>
+                </span>
+                <span class="cm-method-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                </span>
+            </a>
+        </div>
+        <footer class="cm-foot">
+            <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>
+                Average response time · 4 min
+            </span>
+            <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>
+                EN · MK · DE · IT · FR
+            </span>
+        </footer>
+    </div>
+</div>
+
+<!-- â”€â”€ FAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<button class="dt-float dt-float-pulse-host" id="contactFAB" aria-label="Contact us" style="width:56px;height:56px;border-radius:50%;padding:0;">
+    <div class="dt-float-pulse"></div>
+    <span class="dt-float-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <path d="m3 7 9 7 9-7"/>
+        </svg>
+    </span>
+</button>
+
+<!-- â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<main class="tb-body">
+    @RenderBody()
+</main>
+
+<!-- â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<footer class="dt-footer">
+    <div class="dt-footer-top">
+        <a class="dt-footer-brand" href="@Url.Action("Index","Home")">
+            <span class="dt-brand-mark"><span class="dt-brand-mark-dot"></span></span>
+            TaxiBlitz <em class="serif-it">Ohrid</em>
+        </a>
+        <p class="dt-footer-tagline">Driving the shores <br><em class="serif-it">of Lake Ohrid since
+            2000.</em></p>
+    </div>
+    <div class="dt-footer-grid">
+        <div>
+            <h5>Explore</h5>
+            @Html.ActionLink("All Tours",      "Index",   "Tours",       new { area = "" }, null)
+            @Html.ActionLink("Our Drivers",    "Index",   "Drivers",     new { area = "" }, null)
+            @Html.ActionLink("Tour Stories",   "Index",   "TourStories", new { area = "" }, null)
+            @Html.ActionLink("Gallery",        "Gallery", "Manage",      new { area = "" }, null)
+        </div>
+        <div>
+            <h5>Book</h5>
+            @Html.ActionLink("Book a Tour",    "Create",        "BookingTours", new { area = "" }, null)
+            @Html.ActionLink("My Bookings",    "UserBookings",  "BookingTours", new { area = "" }, null)
+        </div>
+        <div>
+            <h5>Contact</h5>
+            <a href="tel:+38970589874">+389 70 589 874</a>
+            <a href="mailto:zulirizvani@gmail.com">zulirizvani@gmail.com</a>
+            <a href="https://wa.me/+38970589874" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+        <div>
+            <h5>Account</h5>
+            @if (!User.Identity.IsAuthenticated) {
+                @Html.ActionLink("Sign in",   "Login",    "Account", new { area = "" }, null)
+                @Html.ActionLink("Register",  "Register", "Account", new { area = "" }, null)
+            } else {
+                <span style="color:var(--fg-3);font-size:15px;padding:6px 0;display:block">@User.Identity.Name</span>
+                @using (Html.BeginForm("LogOff","Account",FormMethod.Post)) {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" style="background:none;border:none;color:var(--fg);font-size:15px;padding:6px 0;cursor:pointer;font-family:var(--sans);text-align:left">Log off</button>
+                }
+            }
+        </div>
+    </div>
+    <div class="dt-footer-bot">
+        <span>&copy; @DateTime.Now.Year TaxiBlitz Ohrid. All rights reserved.</span>
+        <span style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+            @Html.ActionLink("Privacy Policy", "Privacy", "Home", new { area = "" }, new { style = "color:var(--fg-3);font-size:13px;" })
+            <span style="color:var(--fg-3);font-size:13px;">Made by Edi Rizvani · Computer Science Student</span>
+        </span>
+    </div>
+</footer>
+
+<script src="~/lib/jquery/jquery.min.js"></script>
+<script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
+
+<script>
+(function () {
+    var toggle = document.getElementById('navToggle');
+    var close  = document.getElementById('navClose');
+    var drawer = document.getElementById('navDrawer');
+    if (toggle) toggle.addEventListener('click', function () { drawer.classList.toggle('open'); });
+    if (close)  close.addEventListener('click',  function () { drawer.classList.remove('open'); });
+    if (drawer) drawer.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () { drawer.classList.remove('open'); });
+    });
+
+    var fab     = document.getElementById('contactFAB');
+    var modal   = document.getElementById('contactModal');
+    var cmClose = document.getElementById('cmClose');
+    var cmBack  = document.getElementById('cmBackdrop');
+    function openModal()  { modal.style.display = 'flex'; document.documentElement.style.overflow = 'hidden'; }
+    function closeModal() { modal.style.display = 'none';  document.documentElement.style.overflow = ''; }
+    if (fab)    fab.addEventListener('click', function () {
+        if (modal.style.display === 'flex') { closeModal(); } else { openModal(); }
+    });
+    if (cmClose) cmClose.addEventListener('click', closeModal);
+    if (cmBack)  cmBack.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+    var userBtn      = document.getElementById('navUserBtn');
+    var userDropdown = document.getElementById('navUserDropdown');
+    if (userBtn) {
+        userBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = userDropdown.classList.toggle('open');
+            userBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', function () {
+            userDropdown.classList.remove('open');
+            userBtn.setAttribute('aria-expanded', 'false');
+        });
+        userDropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+    }
+})();
+</script>
+
+@RenderSection("scripts", required: false)
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/service-worker.js').catch(function(){});
+    });
+}
+</script>
+</body>
+</html>

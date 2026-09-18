@@ -1,0 +1,329 @@
+@model IEnumerable<BookingTour>
+
+<style>
+    @@media (max-width: 640px) {
+        .dt-page-head h1 { font-size: 32px !important; }
+        .dt-admin-cal { margin-left: 16px !important; margin-right: 16px !important; margin-bottom: 32px !important; }
+        .dt-admin-table-section { margin: 0 16px 40px !important; padding: 0 !important; }
+
+        /* card-stack table layout */
+        .dt-admin-table thead { display: none; }
+        .dt-admin-table,
+        .dt-admin-table tbody,
+        .dt-admin-table tr,
+        .dt-admin-table td { display: block; width: 100%; box-sizing: border-box; }
+        .dt-admin-table { border-radius: 0; border: none; background: transparent; }
+        .dt-admin-table tr {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            background: var(--ink-2);
+        }
+        .dt-admin-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+            border-top: 1px solid var(--line);
+        }
+        .dt-admin-table td:first-child { border-top: none; }
+        .dt-admin-table td::before {
+            content: attr(data-label);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--fg-3);
+            flex-shrink: 0;
+            padding-top: 2px;
+            min-width: 72px;
+        }
+        .dt-admin-table td[data-label="Actions"],
+        .dt-admin-table td[data-label="People"] { flex-wrap: wrap; }
+        .dt-admin-table td[data-label="Actions"] { flex-direction: column; align-items: stretch; display: flex; }
+        .dt-admin-table td[data-label="Actions"]::before { margin-bottom: 6px; }
+        .dt-admin-table td[data-label="Actions"] .btn { width: 100%; justify-content: center; margin: 2px 0; }
+
+        /* empty-state full-width row */
+        .dt-admin-table td[colspan] { justify-content: center; }
+        .dt-admin-table td[colspan]::before { display: none; }
+    }
+</style>
+
+@{
+    ViewBag.Title = "Bookings Overview";
+    var bookings     = Model ?? Enumerable.Empty<BookingTour>();
+    var pendingList  = bookings.Where(b => b.Status == "Pending").ToList();
+    var approvedList = bookings.Where(b => b.Status == "Approved" && b.BookingDateTime >= DateTime.Now).ToList();
+    var canceledList = bookings.Where(b => b.Status == "Canceled" || b.Status == "Cancelled").ToList();
+    var pastList     = bookings.Where(b => b.BookingDateTime < DateTime.Now).ToList();
+}
+
+<div class="dt-page-pad">
+
+@if (TempData["ApprovedBookingEmail"] != null) {
+    bool hasError = TempData["ApprovedEmailError"] != null;
+    <div class="dt-approval-toast" id="approvalToast">
+        <div class="dt-approval-toast-head">
+            <span class="dt-approval-toast-status">
+                @if (!hasError) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0;color:#4ADE80"><path d="m5 12 5 5L20 7"/></svg>
+                    <span>Booking approved · confirmation email sent to <strong>@TempData["ApprovedBookingEmail"]</strong></span>
+                } else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0;color:#F87171"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg>
+                    <span>Booking approved — <span style="color:#F87171;">email failed: @TempData["ApprovedEmailError"]</span> · copy the message below to send manually.</span>
+                }
+            </span>
+            <button class="dt-approval-toggle" id="approvalToggle" onclick="toggleApprovalMsg()">Show message</button>
+        </div>
+        <div id="approvalMsgBody" style="display:none;">
+            <pre id="approvalMsgText" class="dt-approval-pre">@TempData["ApprovedBookingText"]</pre>
+            <button class="btn btn-ghost" id="approvalCopyBtn" style="font-size:13px;padding:7px 16px;" onclick="copyApprovalMsg()">Copy message</button>
+        </div>
+    </div>
+}
+
+    <div class="dt-page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1 style="font-size:56px;letter-spacing:-0.035em;font-weight:500;line-height:0.98;margin:14px 0 0;color:var(--fg);">Bookings <em class="serif-it">overview</em></h1>
+        </div>
+        <div class="dt-page-head-right">
+            @Html.ActionLink("+ New booking", "Create", null, new { @class = "btn btn-primary" })
+        </div>
+    </div>
+
+    <!-- Stat tiles -->
+    <div class="dt-admin-tiles">
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#FACC15;">@pendingList.Count</span>
+            <span class="dt-admin-tile-l">Pending</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#4ADE80;">@approvedList.Count</span>
+            <span class="dt-admin-tile-l">Approved (upcoming)</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:#F87171;">@canceledList.Count</span>
+            <span class="dt-admin-tile-l">Canceled</span>
+        </div>
+        <div class="dt-admin-tile">
+            <span class="dt-admin-tile-k" style="color:var(--fg-3);">@pastList.Count</span>
+            <span class="dt-admin-tile-l">Past</span>
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="dt-admin-cal">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <h3 style="font-size:16px;font-weight:500;color:var(--fg);margin:0;">Approved bookings calendar</h3>
+            <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-3);">Live from approved</span>
+        </div>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Pending -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:#FACC15;">Pending bookings</span>
+            <span class="dt-admin-table-badge">@pendingList.Count</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Driver</th><th>Tour</th><th>Customer</th><th>Phone</th><th>Date</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!pendingList.Any()) {
+                    <tr><td colspan="6" style="text-align:center;color:var(--fg-3);">No pending bookings</td></tr>
+                }
+                @foreach (var item in pendingList) {
+                    <tr>
+                        <td data-label="Driver">@(item.Driver?.Name ?? "—")</td>
+                        <td data-label="Tour">@(item.Tour?.Title ?? "—")</td>
+                        <td data-label="Customer">
+                            <strong style="color:var(--fg);">@item.NameOfBookMaker</strong>
+                            @if (!string.IsNullOrEmpty(item.CustomerEmail)) {<br /><small style="color:var(--fg-3);">@item.CustomerEmail</small>}
+                        </td>
+                        <td data-label="Phone">@item.PhoneNumber</td>
+                        <td data-label="Date">@item.BookingDateTime.ToString("MMM d, yyyy · HH:mm")</td>
+                        <td data-label="Actions" style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <form method="post" action="@Url.Action("Approve","BookingTours",new{id=item.Id})" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-primary" style="font-size:12px;padding:6px 12px;">Approve</button>
+                            </form>
+                            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;" })
+                            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "btn btn-ghost", style = "font-size:12px;padding:6px 12px;border-color:rgba(248,113,113,0.3);color:#F87171;" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Approved -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:#4ADE80;">Approved bookings</span>
+            <span class="dt-admin-table-badge">@approvedList.Count</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Driver</th><th>Tour</th><th>Customer</th><th>Phone</th><th>Date</th><th>People</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!approvedList.Any()) {
+                    <tr><td colspan="6" style="text-align:center;color:var(--fg-3);">No upcoming approved bookings</td></tr>
+                }
+                @foreach (var item in approvedList) {
+                    <tr>
+                        <td data-label="Driver">@(item.Driver?.Name ?? "—")</td>
+                        <td data-label="Tour">@(item.Tour?.Title ?? "—")</td>
+                        <td data-label="Customer">
+                            <strong style="color:var(--fg);">@item.NameOfBookMaker</strong>
+                            @if (!string.IsNullOrEmpty(item.CustomerEmail)) {<br /><small style="color:var(--fg-3);">@item.CustomerEmail</small>}
+                        </td>
+                        <td data-label="Phone">@item.PhoneNumber</td>
+                        <td data-label="Date">@item.BookingDateTime.ToString("MMM d, yyyy · HH:mm")</td>
+                        <td data-label="People">@item.NumberOfPeople</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Canceled -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:#F87171;">Canceled bookings</span>
+            <span class="dt-admin-table-badge">@canceledList.Count</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Driver</th><th>Tour</th><th>Customer</th><th>Phone</th><th>Date</th><th>People</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!canceledList.Any()) {
+                    <tr><td colspan="6" style="text-align:center;color:var(--fg-3);">No canceled bookings</td></tr>
+                }
+                @foreach (var item in canceledList) {
+                    <tr>
+                        <td data-label="Driver">@(item.Driver?.Name ?? "—")</td>
+                        <td data-label="Tour">@(item.Tour?.Title ?? "—")</td>
+                        <td data-label="Customer">
+                            <strong style="color:var(--fg);">@item.NameOfBookMaker</strong>
+                            @if (!string.IsNullOrEmpty(item.CustomerEmail)) {<br /><small style="color:var(--fg-3);">@item.CustomerEmail</small>}
+                        </td>
+                        <td data-label="Phone">@item.PhoneNumber</td>
+                        <td data-label="Date">@item.BookingDateTime.ToString("MMM d, yyyy · HH:mm")</td>
+                        <td data-label="People">@item.NumberOfPeople</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Past -->
+    <div class="dt-admin-table-section">
+        <div class="dt-admin-table-head">
+            <span style="color:var(--fg-3);">Past bookings</span>
+            <span class="dt-admin-table-badge">@pastList.Count</span>
+        </div>
+        <table class="dt-admin-table">
+            <thead>
+                <tr>
+                    <th>Driver</th><th>Tour</th><th>Customer</th><th>Phone</th><th>Date</th><th>People</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!pastList.Any()) {
+                    <tr><td colspan="6" style="text-align:center;color:var(--fg-3);">No past bookings</td></tr>
+                }
+                @foreach (var item in pastList) {
+                    <tr>
+                        <td data-label="Driver">@(item.Driver?.Name ?? "—")</td>
+                        <td data-label="Tour">@(item.Tour?.Title ?? "—")</td>
+                        <td data-label="Customer">
+                            <strong style="color:var(--fg);">@item.NameOfBookMaker</strong>
+                            @if (!string.IsNullOrEmpty(item.CustomerEmail)) {<br /><small style="color:var(--fg-3);">@item.CustomerEmail</small>}
+                        </td>
+                        <td data-label="Phone">@item.PhoneNumber</td>
+                        <td data-label="Date">@item.BookingDateTime.ToString("MMM d, yyyy · HH:mm")</td>
+                        <td data-label="People">@item.NumberOfPeople</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    @{ var hasFc = System.IO.File.Exists(System.IO.Path.Combine(Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>().WebRootPath, "lib", "fullcalendar", "main.min.js")); }
+    @if (hasFc) {
+        <link href="@Url.Content("~/lib/fullcalendar/main.min.css")" rel="stylesheet" />
+        <script src="@Url.Content("~/lib/fullcalendar/main.min.js")"></script>
+        <script src="@Url.Content("~/lib/fullcalendar/locales-all.min.js")"></script>
+    } else {
+        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales-all.min.js"></script>
+    }
+    <script>
+    function toggleApprovalMsg() {
+        var body = document.getElementById('approvalMsgBody');
+        var btn  = document.getElementById('approvalToggle');
+        if (body.style.display === 'none') {
+            body.style.display = 'block';
+            btn.textContent = 'Hide message';
+        } else {
+            body.style.display = 'none';
+            btn.textContent = 'Show message';
+        }
+    }
+    function copyApprovalMsg() {
+        var text = document.getElementById('approvalMsgText').textContent;
+        var btn  = document.getElementById('approvalCopyBtn');
+        navigator.clipboard.writeText(text).then(function() {
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.textContent = 'Copy message'; }, 2000);
+        }).catch(function() {
+            // Fallback for older browsers
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.textContent = 'Copy message'; }, 2000);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+                events: [
+                    @foreach (var item in Model.Where(b => b.Status == "Approved" && b.Tour != null)) {
+                        <text>{ title: "@(item.Tour.Title)@(item.Driver != null ? $" - {item.Driver.Name}" : " - TBA")", start: "@item.BookingDateTime.ToString("yyyy-MM-ddTHH:mm:ss")", url: "@Url.Action("Details","Tours", new { id = item.Tour.Id })" },</text>
+                    }
+                ],
+            eventColor: '#67E8F9',
+            eventTextColor: '#0F1612'
+        });
+        calendar.render();
+    });
+    </script>
+}
+
